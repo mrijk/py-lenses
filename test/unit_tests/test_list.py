@@ -1,5 +1,6 @@
-from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens
-from lenses.lens import ListLens, ComposedListLens
+from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, ComposedFlattenListKeyLens
+from lenses.lens import ListLens, ComposedListLens, ComposedLens
+from lenses.transformer import Transformer
 
 
 def test_all():
@@ -68,7 +69,7 @@ def test_list_in_dict():
     lens_x = ListKeyLens[dict, dict](key="x")
     lens_y = KeyLens[dict, int](key="y")
 
-    lens = lens_x | lens_y
+    lens = lens_x >> lens_y
 
     assert isinstance(lens, ComposedListKeyLens)
 
@@ -85,7 +86,7 @@ def test_list_in_dict_2():
     lens_y = KeyLens[dict, dict](key="y")
     lens_z = KeyLens[dict, int](key="z")
 
-    lens = lens_x | lens_y | lens_z
+    lens = lens_x >> lens_y >> lens_z
 
     assert isinstance(lens, ComposedListKeyLens)
 
@@ -102,7 +103,7 @@ def test_list_in_dict_3():
     lens_y = ListKeyLens[dict, dict](key="y")
     lens_z = KeyLens[dict, int](key="z")
 
-    lens = lens_x | lens_y | lens_z
+    lens = lens_x >> lens_y >> lens_z
 
     assert isinstance(lens, ComposedListKeyLens)
 
@@ -110,6 +111,25 @@ def test_list_in_dict_3():
 
     assert not error
     assert result == [13, 14]
+
+
+def test_aggregate_list():
+    data = {"x": [{"y": {"z": 13}}, {"y": {"z": 14}}]}
+
+    lens_x = ListKeyLens[dict, dict](key="x")
+    lens_y = KeyLens[dict, dict](key="y")
+    lens_z = KeyLens[dict, int](key="z")
+
+    add = Transformer[list[int], int](sum)
+
+    lens = lens_x >> lens_y >> lens_z | add
+
+    assert isinstance(lens, ComposedFlattenListKeyLens)
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == 27
 
 
 def test_complex():

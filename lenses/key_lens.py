@@ -1,7 +1,7 @@
-from typing import TypeVar
+from typing import TypeVar, overload, get_args, Any
 
-from lenses.lens import LensError, Lens, ComposedListLens
-from lenses.transformer import BaseTransformer
+from lenses.lens import LensError, Lens, ComposedListLens, ComposedLens
+from lenses.transformer import BaseTransformer, Transformer
 
 R = TypeVar('R')
 S = TypeVar('S')
@@ -28,30 +28,52 @@ class KeyLens(BaseTransformer[R, S]):
 class ListKeyLens(Lens[R, S]):
     def __init__(self, key: str):
         self.key_lens = KeyLens(key=key)
-        self.key = key
 
-    def __or__(self, other: "Lens[S, T]") -> "ComposedListKeyLens[R, T]":
-        return ComposedListKeyLens[R, T](KeyLens(self.key), other)
+    def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
+        return ComposedListKeyLens[R, T](self.key_lens, other)
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
         return self.key_lens(data)
 
 
 class ComposedListKeyLens(Lens[R, T]):
-    def __init__(self, source: Lens, lens: Lens[S, T]):
+    def __init__(self, source: Lens, lens: Lens[T, U]):
         self.source = source
         self.lens = lens
 
-    def __or__(self: Lens[R, T], other: "Lens[T, U]") -> "ComposedListKeyLens[R, U]":
-        return ComposedListKeyLens[R, T](self, lens=other)
+    def __rshift__(self: Lens[R, T], other: Lens[T, U]) -> "ComposedListKeyLens[R, U]":
+        args = other.__orig_class__.__args__[0]
+        if args.__subclasscheck__(list):
+            return ComposedFlattenListKeyLens[R, U](self, lens=other)
+        return ComposedListKeyLens[R, U](self, lens=other)
+
+    def __or__(self: Lens[R, T], other: Lens[list[T], U]) -> "ComposedFlattenListKeyLens[R, U]":
+        return ComposedFlattenListKeyLens[R, U](self, lens=other)
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
         _, foo = self.source(data)
-        result = (self.lens(v) for v in foo)
+        # TODO: add error handling
 
-        errors, values = list(zip(*result))
+        args = self.lens.__orig_class__.__args__[0]
 
-        if any(errors):
-            return LensError(msg="Error in list"), None
+        if args.__subclasscheck__(list):
+            return self.lens(foo)
         else:
-            return None, list(values)
+            result = (self.lens(v) for v in foo)
+            errors, values = list(zip(*result))
+
+            if any(errors):
+                return LensError(msg="Error in list"), None
+            else:
+                return None, list(values)
+
+
+class ComposedFlattenListKeyLens(ComposedListKeyLens[R, T]):
+    def __init__(self, source: Lens, lens: Lens[T, U]):
+        super().__init__(source, lens)
+
+    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, T | None]:
+        _, foo = self.source(data)
+        # TODO: add error handling
+
+        return self.lens(foo)

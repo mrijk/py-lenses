@@ -21,8 +21,8 @@ class Lens(Generic[R, S]):
     def __or__(self, other: "Lens[S, T]") -> "Lens[R, T]":
         return ComposedLens[R, T](self, other)
 
-    def __rshift__(self: "Lens[R, list[U]]", other: "Lens[U, T]") -> "Lens[R, list[T]]":
-        return None
+    def __rshift__(self, other: "Lens[S, T]") -> "Lens[R, T]":
+        return ComposedLens[R, T](self, other)
 
     def __add__(self, other: "Lens[R, T]") -> "Lens[R, tuple[S, T]]":
         return CombinedLens(self, other)

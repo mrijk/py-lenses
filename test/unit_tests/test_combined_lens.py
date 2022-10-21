@@ -39,11 +39,11 @@ def test_2_added_lenses():
     lens_x = KeyLens[dict, dict](key="x")
     lens_y = KeyLens[dict, int](key="y")
     lens_z = KeyLens[dict, dict](key="z")
-    lens_q = lens_z | KeyLens[dict, int](key="q")
+    lens_q = lens_z >> KeyLens[dict, int](key="q")
 
     lens_yq = lens_y + lens_q
 
-    lens = lens_x | lens_yq
+    lens = lens_x >> lens_yq
 
     error, result = lens(data)
 
@@ -58,12 +58,11 @@ def test_3_added_lenses():
     lens_y = KeyLens[dict, int](key="y")
     lens_z = KeyLens[dict, dict](key="z")
     lens_q = KeyLens[dict, int](key="q")
-    lens_qz = lens_z | lens_q
     lens_w = KeyLens(key="w")
 
-    lens_yqw = lens_y + lens_qz + lens_w
+    lens_yqw = lens_y + (lens_z >> lens_q) + lens_w
 
-    lens = lens_x | lens_yqw
+    lens = lens_x >> lens_yqw
 
     error, result = lens(data)
 

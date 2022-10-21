@@ -7,7 +7,7 @@ def test_two_lenses():
     lens_x = KeyLens[dict, dict](key="x")
     lens_y = KeyLens[dict, int](key="y")
 
-    lens = lens_x | lens_y
+    lens = lens_x >> lens_y
 
     error, result = lens(data)
 
@@ -22,7 +22,7 @@ def test_three_lenses():
     lens_y = KeyLens[dict, dict](key="y")
     lens_z = KeyLens[dict, int](key="z")
 
-    lens = lens_x | lens_y | lens_z
+    lens = lens_x >> lens_y >> lens_z
 
     error, result = lens(data)
 
