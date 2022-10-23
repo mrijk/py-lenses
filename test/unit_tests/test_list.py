@@ -1,5 +1,7 @@
 from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, ComposedFlattenListKeyLens
-from lenses.lens import ListLens, ComposedListLens, ComposedLens
+from lenses.lens import ListLens, ComposedListLens
+from lenses.predefined import add, count, gt, inc
+from lenses.predicate import Predicate
 from lenses.transformer import Transformer
 
 
@@ -105,12 +107,12 @@ def test_list_in_dict_3():
 
     lens = lens_x >> lens_y >> lens_z
 
-    assert isinstance(lens, ComposedListKeyLens)
+    # assert isinstance(lens, ComposedListKeyLens)
 
     error, result = lens(data)
 
     assert not error
-    assert result == [13, 14]
+    assert result == [[13, 14]]
 
 
 def test_aggregate_list():
@@ -119,8 +121,6 @@ def test_aggregate_list():
     lens_x = ListKeyLens[dict, dict](key="x")
     lens_y = KeyLens[dict, dict](key="y")
     lens_z = KeyLens[dict, int](key="z")
-
-    add = Transformer[list[int], int](sum)
 
     lens = lens_x >> lens_y >> lens_z | add
 
@@ -132,10 +132,37 @@ def test_aggregate_list():
     assert result == 27
 
 
+def test_filtered_list():
+    """Count number of records for which y greater than 13"""
+    data = {"x": [{"y": 13}, {"y": 14}]}
+
+    lens_x = ListKeyLens[dict, dict](key="x")
+    lens_y = KeyLens[dict, int](key="y")
+
+    gt_13 = Predicate[int](lambda x: x > 13)
+
+    lens = lens_x >> lens_y >> gt_13 | count
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == 1
+
+
 def test_complex():
-    # Return all z values increased by 1 if z >= 14
-
-
-    # lens = lens_x | lens_y | (z_gt_14 | inc_z | lens_z)
-
+    """ Return all z values increased by 1 if z >= 14"""
     data = {"x": {"y": [{"z": 13}, {"z": 14}]}}
+
+    lens_x = KeyLens[dict, dict](key="x")
+    lens_y = ListKeyLens[dict, dict](key="y")
+    lens_z = KeyLens[dict, int](key="z")
+    gt_14 = Predicate[int](lambda x: x >= 14)
+
+    lens = lens_x >> lens_y >> lens_z >> gt_14 >> inc
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == [15]
+
+

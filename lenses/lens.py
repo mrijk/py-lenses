@@ -61,7 +61,7 @@ class CombinedLens(Lens[R, tuple[S, T]]):
 
 
 class ComposedLens(Lens[R, T]):
-    """lens = KeyLens(key="x") | KeyLens(key="y")"""
+    """lens = KeyLens(key="x") >> KeyLens(key="y")"""
     def __init__(self, lens1: Lens[R, S], lens2: Lens[S, T]):
         self.lens1 = lens1
         self.lens2 = lens2

@@ -8,7 +8,7 @@ T = TypeVar('T')
 
 
 class Transformer(Lens[R, T]):
-    def __init__(self, f, can_throw: bool=False):
+    def __init__(self, f, can_throw: bool = False):
         self.f = f
         self.can_throw = can_throw
 

@@ -1,6 +1,7 @@
 from typing import TypeVar, overload, get_args, Any
 
 from lenses.lens import LensError, Lens, ComposedListLens, ComposedLens
+from lenses.predicate import Predicate
 from lenses.transformer import BaseTransformer, Transformer
 
 R = TypeVar('R')
@@ -29,6 +30,9 @@ class ListKeyLens(Lens[R, S]):
     def __init__(self, key: str):
         self.key_lens = KeyLens(key=key)
 
+    def __or__(self, other: Lens[S, T]) -> "ComposedFlattenListKeyLens[R, T]":
+        return ComposedFlattenListKeyLens[R, T](self.key_lens, other)
+
     def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
         return ComposedListKeyLens[R, T](self.key_lens, other)
 
@@ -51,21 +55,22 @@ class ComposedListKeyLens(Lens[R, T]):
         return ComposedFlattenListKeyLens[R, U](self, lens=other)
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
-        _, foo = self.source(data)
+        _, source = self.source(data)
         # TODO: add error handling
 
-        args = self.lens.__orig_class__.__args__[0]
-
-        if args.__subclasscheck__(list):
-            return self.lens(foo)
+        if isinstance(self.lens, Predicate):
+            # TODO: add error handling if self.lens fails
+            # TODO: better to return a different kind of lens in the __rshift__ when this is a predicate
+            result = [(None, v) for v in source if self.lens(v)[1]]
         else:
-            result = (self.lens(v) for v in foo)
-            errors, values = list(zip(*result))
+            result = (self.lens(v) for v in source)
 
-            if any(errors):
-                return LensError(msg="Error in list"), None
-            else:
-                return None, list(values)
+        errors, values = list(zip(*result))
+
+        if any(errors):
+            return LensError(msg="Error in list"), None
+        else:
+            return None, list(values)
 
 
 class ComposedFlattenListKeyLens(ComposedListKeyLens[R, T]):
