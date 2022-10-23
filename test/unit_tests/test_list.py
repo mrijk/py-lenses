@@ -105,9 +105,9 @@ def test_list_in_dict_3():
     lens_y = ListKeyLens[dict, dict](key="y")
     lens_z = KeyLens[dict, int](key="z")
 
-    lens = lens_x >> lens_y >> lens_z
+    lens = lens_x >> (lens_y >> lens_z)
 
-    # assert isinstance(lens, ComposedListKeyLens)
+    assert isinstance(lens, ComposedListKeyLens)
 
     error, result = lens(data)
 

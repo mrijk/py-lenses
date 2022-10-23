@@ -14,4 +14,10 @@ class Predicate(Lens[R, R]):
         self.can_throw = can_throw
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, bool | None]:
-        return None, self.f(data)
+        if self.can_throw:
+            try:
+                return None, self.f(data)
+            except Exception as exc:
+                return LensError(msg="Predicate has raised an exception", details=str(exc)), None
+        else:
+            return None, self.f(data)
