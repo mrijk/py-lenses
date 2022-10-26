@@ -8,7 +8,7 @@ T = TypeVar('T')
 U = TypeVar('U')
 
 
-class Predicate(Lens[R, R]):
+class Predicate(Lens[S, bool]):
     def __init__(self, f, can_throw: bool = False):
         self.f = f
         self.can_throw = can_throw

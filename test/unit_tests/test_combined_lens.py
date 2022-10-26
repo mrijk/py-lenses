@@ -1,7 +1,8 @@
 from lenses.key_lens import KeyLens
+from lenses.lens import CombinedLens, Combined3Lens
 
 
-def test_added_lenses():
+def test_2_added_lenses():
     data = {"x": 42, "y": "42"}
 
     lens_x = KeyLens[dict, int](key="x")
@@ -9,10 +10,29 @@ def test_added_lenses():
 
     lens = lens_x + lens_y
 
+    assert isinstance(lens, CombinedLens)
+
     error, result = lens(data)
 
     assert not error
     assert result == (42, "42")
+
+
+def test_3_added_lenses():
+    data = {"x": 42, "y": "42", "z": 3.14}
+
+    lens_x = KeyLens[dict, int](key="x")
+    lens_y = KeyLens[dict, str](key="y")
+    lens_z = KeyLens[dict, float](key="z")
+
+    lens = lens_x + lens_y + lens_z
+
+    assert isinstance(lens, Combined3Lens)
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == (42, "42", 3.14)
 
 
 def test_added_lenses_with_missing_keys():
@@ -22,6 +42,8 @@ def test_added_lenses_with_missing_keys():
     lens_y = KeyLens[dict, str](key="b")
 
     lens = lens_x + lens_y
+
+    assert isinstance(lens, CombinedLens)
 
     error, result = lens(data)
 
@@ -33,7 +55,7 @@ def test_added_lenses_with_missing_keys():
     assert result is None
 
 
-def test_2_added_lenses():
+def test_2_added_lenses_with_composition():
     data = {"x": {"y": 42, "z": {"q": 666}}}
 
     lens_x = KeyLens[dict, dict](key="x")
@@ -51,16 +73,18 @@ def test_2_added_lenses():
     assert result == (42, 666)
 
 
-def test_3_added_lenses():
+def test_3_added_lenses_with_composition():
     data = {"x": {"y": 42, "z": {"q": 666}, "w": 13}}
 
     lens_x = KeyLens[dict, dict](key="x")
     lens_y = KeyLens[dict, int](key="y")
     lens_z = KeyLens[dict, dict](key="z")
     lens_q = KeyLens[dict, int](key="q")
-    lens_w = KeyLens(key="w")
+    lens_w = KeyLens[dict, int](key="w")
 
     lens_yqw = lens_y + (lens_z >> lens_q) + lens_w
+
+    assert isinstance(lens_yqw, Combined3Lens)
 
     lens = lens_x >> lens_yqw
 

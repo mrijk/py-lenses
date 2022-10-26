@@ -40,12 +40,12 @@ class ListKeyLens(Lens[R, S]):
         return self.key_lens(data)
 
 
-class ComposedListKeyLens(Lens[R, T]):
+class ComposedListKeyLens(Lens[R, S]):
     def __init__(self, source: Lens, lens: Lens[T, U]):
         self.source = source
         self.lens = lens
 
-    def __rshift__(self: Lens[R, T], other: Lens[T, U]) -> "ComposedListKeyLens[R, U]":
+    def __rshift__(self: Lens[R, S], other: Lens[S, U]) -> "ComposedListKeyLens[R, U]":
         args = other.__orig_class__.__args__[0]
         if args.__subclasscheck__(list):
             return ComposedFlattenListKeyLens[R, U](self, lens=other)

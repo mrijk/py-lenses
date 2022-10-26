@@ -1,9 +1,12 @@
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any, overload
+from typing import Generic, TypeVar, Any
 
 R = TypeVar('R')
 S = TypeVar('S')
 T = TypeVar('T')
+S1 = TypeVar('S1')
+S2 = TypeVar('S2')
+S3 = TypeVar('S3')
 U = TypeVar('U')
 
 
@@ -24,17 +27,36 @@ class Lens(Generic[R, S]):
     def __rshift__(self, other: "Lens[S, T]") -> "Lens[R, T]":
         return ComposedLens[R, T](self, other)
 
-    def __add__(self, other: "Lens[R, T]") -> "Lens[R, tuple[S, T]]":
-        return CombinedLens(self, other)
+    def __add__(self, other: "Lens[R, S2]") -> "CombinedLens[R, tuple[S, S2]]":
+        return CombinedLens(lens1=self, lens2=other)
 
 
-class CombinedLens(Lens[R, tuple[S, T]]):
+class Combined3Lens(Lens[R, tuple[S1, S2, S3]]):
+    def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3]):
+        self.lens1 = lens1
+        self.lens2 = lens2
+        self.lens3 = lens3
+
+    def __call__(self: Lens[R, tuple[S1, S2, S3]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3] | None]:
+        result = (lens(data) for lens in [self.lens1, self.lens2, self.lens3])
+        errors, values = list(zip(*result))
+
+        if any(errors):
+            return LensError(msg="Error in list"), None
+        else:
+            return None, tuple(values)
+
+
+class CombinedLens(Lens[R, tuple[S1, S2]]):
     """lens = KeyLens(key="x") + KeyLens(key="y")"""
-    def __init__(self, lens1: Lens[R, S], lens2: Lens[R, T]):
+    def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2]):
         self.lens1 = lens1
         self.lens2 = lens2
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, tuple[S, T] | None]:
+    def __add__(self: Lens[R, tuple[S1, S2]], other: Lens[R, S3]) -> "Combined3Lens[R, tuple[S1, S2, S3]]":
+        return Combined3Lens(lens1=self.lens1, lens2=self.lens2, lens3=other)
+
+    def __call__(self: Lens[R, tuple[S1, S2]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2] | None]:
         match data:
             case list() as l:
                 return super().__call__(l)
