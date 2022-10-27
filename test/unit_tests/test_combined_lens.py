@@ -1,5 +1,6 @@
 from lenses.key_lens import KeyLens
-from lenses.lens import CombinedLens, Combined3Lens
+from lenses.lens import CombinedLens, Combined3Lens, Combined4Lens, ComposedTupleLens
+from lenses.predefined import add
 
 
 def test_2_added_lenses():
@@ -35,6 +36,24 @@ def test_3_added_lenses():
     assert result == (42, "42", 3.14)
 
 
+def test_4_added_lenses():
+    data = {"w": "13", "x": 42, "y": "42", "z": 3.14}
+
+    lens_w = KeyLens[dict, str](key="w")
+    lens_x = KeyLens[dict, int](key="x")
+    lens_y = KeyLens[dict, str](key="y")
+    lens_z = KeyLens[dict, float](key="z")
+
+    lens = lens_w + lens_x + lens_y + lens_z
+
+    assert isinstance(lens, Combined4Lens)
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == ("13", 42, "42", 3.14)
+
+
 def test_added_lenses_with_missing_keys():
     data = {"x": 42, "y": "42"}
 
@@ -61,6 +80,7 @@ def test_2_added_lenses_with_composition():
     lens_x = KeyLens[dict, dict](key="x")
     lens_y = KeyLens[dict, int](key="y")
     lens_z = KeyLens[dict, dict](key="z")
+
     lens_q = lens_z >> KeyLens[dict, int](key="q")
 
     lens_yq = lens_y + lens_q
@@ -92,3 +112,52 @@ def test_3_added_lenses_with_composition():
 
     assert not error
     assert result == (42, 666, 13)
+
+
+def test_combine_and_compose():
+    data = {"x": {"z": 13}, "y": {"z": 14}}
+
+    lens_x = KeyLens[dict, dict](key="x")
+    lens_y = KeyLens[dict, dict](key="y")
+    lens_z = KeyLens[dict, int](key="z")
+
+    lens = (lens_x + lens_y) >> lens_z
+
+    assert isinstance(lens, ComposedTupleLens)
+
+    error, result = lens(data)
+
+    assert not error
+    assert isinstance(result, tuple), f"Expected tuple, found {type(result)}"
+    assert result == (13, 14)
+
+
+def test():
+    data = {"x": {"w": 13, "z": 666}, "y": {"w": 14, "z": "foo"}}
+
+    lens_x = KeyLens[dict, dict](key="x")
+    lens_y = KeyLens[dict, dict](key="y")
+    lens_w = KeyLens[dict, int](key="w")
+    lens_z = KeyLens[dict, int | str](key="z")
+
+    lens = (lens_x + lens_y) >> (lens_w + lens_z)
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == ((13, 666), (14, "foo"))
+
+
+def test_count():
+    data = {"x": 13, "y": 14}
+
+    lens_x = KeyLens[dict, int](key="x")
+    lens_y = KeyLens[dict, int](key="y")
+
+    lens = (lens_x + lens_y) | add
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == 27
+

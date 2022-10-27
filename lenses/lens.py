@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any
+from typing import Generic, TypeVar, Any, Generator
 
 R = TypeVar('R')
 S = TypeVar('S')
@@ -7,6 +7,7 @@ T = TypeVar('T')
 S1 = TypeVar('S1')
 S2 = TypeVar('S2')
 S3 = TypeVar('S3')
+S4 = TypeVar('S4')
 U = TypeVar('U')
 
 
@@ -31,20 +32,42 @@ class Lens(Generic[R, S]):
         return CombinedLens(lens1=self, lens2=other)
 
 
+def combine(result: Generator) -> tuple[LensError | None, tuple | None]:
+    errors, values = list(zip(*result))
+
+    errors = [error for error in errors if error]
+    if errors:
+        return LensError(msg="Failed to combine lenses", details=errors), None
+    else:
+        return None, tuple(values)
+
+
+class Combined4Lens(Lens[R, tuple[S1, S2, S3, S4]]):
+    def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3], lens4: Lens[R, S4]):
+        self.lens1 = lens1
+        self.lens2 = lens2
+        self.lens3 = lens3
+        self.lens4 = lens4
+
+    def __call__(self: Lens[R, tuple[S1, S2, S3, S4]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3, S4] | None]:
+        result = (lens(data) for lens in [self.lens1, self.lens2, self.lens3, self.lens4])
+
+        return combine(result)
+
+
 class Combined3Lens(Lens[R, tuple[S1, S2, S3]]):
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3]):
         self.lens1 = lens1
         self.lens2 = lens2
         self.lens3 = lens3
 
+    def __add__(self: Lens[R, tuple[S1, S2, S3]], other: Lens[R, S4]) -> "Combined4Lens[R, tuple[S1, S2, S3, S4]]":
+        return Combined4Lens(lens1=self.lens1, lens2=self.lens2, lens3=self.lens3, lens4=other)
+
     def __call__(self: Lens[R, tuple[S1, S2, S3]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3] | None]:
         result = (lens(data) for lens in [self.lens1, self.lens2, self.lens3])
-        errors, values = list(zip(*result))
 
-        if any(errors):
-            return LensError(msg="Error in list"), None
-        else:
-            return None, tuple(values)
+        return combine(result)
 
 
 class CombinedLens(Lens[R, tuple[S1, S2]]):
@@ -52,6 +75,12 @@ class CombinedLens(Lens[R, tuple[S1, S2]]):
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2]):
         self.lens1 = lens1
         self.lens2 = lens2
+
+    def __or__(self, other):
+        pass
+
+    def __rshift__(self: Lens[R, tuple[S1, S2]], other: "Lens[S1 | S2, T]") -> "ComposedTupleLens[R, tuple[T, T]]":
+        return ComposedTupleLens(lens1=self, lens2=other)
 
     def __add__(self: Lens[R, tuple[S1, S2]], other: Lens[R, S3]) -> "Combined3Lens[R, tuple[S1, S2, S3]]":
         return Combined3Lens(lens1=self.lens1, lens2=self.lens2, lens3=other)
@@ -108,6 +137,25 @@ class ListLens(Lens[R, R]):
 
     def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, list[R] | None]:
         return None, data
+
+
+class ComposedTupleLens(Lens[R, tuple[S1, S2]]):
+    def __init__(self, lens1: Lens[R, tuple[S1, S2]], lens2: Lens[T, S1 | S2]):
+        self.lens1 = lens1
+        self.lens2 = lens2
+
+    def __call__(self: "ComposedTupleLens[R, tuple[S1, S2]]", data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2] | None]:
+        errors, values = self.lens1(data)
+        # TODO: add error handling
+
+        result = (self.lens2(v) for v in values)
+
+        errors, values = list(zip(*result))
+
+        if any(errors):
+            return LensError(msg="Error in list"), None
+        else:
+            return None, tuple(values)
 
 
 class ComposedListLens(Lens[list[R], list[S]]):

@@ -1,5 +1,5 @@
-from lenses.lens import LensError
 from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens
+from lenses.lens import LensError
 from lenses.predicate import Predicate
 
 

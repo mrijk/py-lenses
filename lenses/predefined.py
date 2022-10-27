@@ -9,6 +9,8 @@ T = TypeVar('T')
 
 add = Transformer[list[T], T](sum)
 
+to_list = Transformer[tuple, list](list)
+
 count = Transformer[list[T], int](len)
 
 inc = Transformer[int, int](lambda x: x + 1)
@@ -23,3 +25,4 @@ def gt(value: T) -> Predicate[T]:
 all_true = Transformer[list[bool], bool](all)
 
 any_true = Transformer[list[bool], bool](any)
+

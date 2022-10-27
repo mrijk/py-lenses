@@ -1,5 +1,5 @@
 from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, ComposedFlattenListKeyLens
-from lenses.lens import ListLens, ComposedListLens
+from lenses.lens import ListLens, ComposedListLens, ComposedLens
 from lenses.predefined import add, count, gt, inc
 from lenses.predicate import Predicate
 from lenses.transformer import Transformer
@@ -158,7 +158,9 @@ def test_complex():
     lens_z = KeyLens[dict, int](key="z")
     gt_14 = Predicate[int](lambda x: x >= 14)
 
-    lens = lens_x >> lens_y >> lens_z >> gt_14 >> inc
+    lens = lens_x >> lens_y  #  >> lens_z  # >> gt_14 >> inc
+
+    assert isinstance(lens, ComposedLens)
 
     error, result = lens(data)
 
