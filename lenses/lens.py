@@ -70,14 +70,24 @@ class Combined3Lens(Lens[R, tuple[S1, S2, S3]]):
         return combine(result)
 
 
+class ComposedFlattenTupleLens(Lens[R, T]):
+    def __init__(self, lens1: Lens, lens2: Lens[tuple, T]):
+        self.lens1 = lens1
+        self.lens2 = lens2
+
+    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, T | None]:
+        _, source = self.lens1(data)
+        return self.lens2(source)
+
+
 class CombinedLens(Lens[R, tuple[S1, S2]]):
     """lens = KeyLens(key="x") + KeyLens(key="y")"""
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2]):
         self.lens1 = lens1
         self.lens2 = lens2
 
-    def __or__(self, other):
-        pass
+    def __or__(self, other: Lens[tuple[S1, S2], T]) -> ComposedFlattenTupleLens[R, T]:
+        return ComposedFlattenTupleLens(lens1=self, lens2=other)
 
     def __rshift__(self: Lens[R, tuple[S1, S2]], other: "Lens[S1 | S2, T]") -> "ComposedTupleLens[R, tuple[T, T]]":
         return ComposedTupleLens(lens1=self, lens2=other)

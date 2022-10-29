@@ -7,7 +7,7 @@ from lenses.transformer import Transformer
 
 T = TypeVar('T')
 
-add = Transformer[list[T], T](sum)
+add = Transformer[list[T], T](sum, can_throw=True)
 
 to_list = Transformer[tuple, list](list)
 

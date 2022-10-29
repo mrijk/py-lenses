@@ -15,7 +15,7 @@ class Transformer(Lens[R, S]):
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, S | None]:
         if self.can_throw:
             try:
-                result = self.f(data, kwargs=kwargs)
+                result = self.f(data, **kwargs)
             except Exception as e:
                 return LensError(msg="Transformer has thrown an exception", details=str(e)), None
             else:

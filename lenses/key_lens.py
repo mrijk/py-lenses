@@ -26,6 +26,9 @@ class KeyLens(BaseTransformer[R, S]):
                     return LensError(msg=f"Field {self.key} missing in {data}", key=self.key), None
 
 
+DictLens = KeyLens[dict, T]
+
+
 class ListKeyLens(Lens[R, S]):
     def __init__(self, key: str):
         self.key_lens = KeyLens(key=key)
