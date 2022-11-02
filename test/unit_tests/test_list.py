@@ -1,8 +1,7 @@
-from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, ComposedFlattenListKeyLens
+from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, ComposedFlattenListKeyLens, DictLens
 from lenses.lens import ListLens, ComposedListLens, ComposedLens
-from lenses.predefined import add, count, gt, inc
+from lenses.predefined import add, count, inc, gt
 from lenses.predicate import Predicate
-from lenses.transformer import Transformer
 
 
 def test_all():
@@ -153,18 +152,17 @@ def test_complex():
     """ Return all z values increased by 1 if z >= 14"""
     data = {"x": {"y": [{"z": 13}, {"z": 14}]}}
 
-    lens_x = KeyLens[dict, dict](key="x")
+    lens_x = DictLens[dict](key="x")
     lens_y = ListKeyLens[dict, dict](key="y")
-    lens_z = KeyLens[dict, int](key="z")
-    gt_14 = Predicate[int](lambda x: x >= 14)
+    lens_z = DictLens[int](key="z")
+    gt_14  = Predicate[int](lambda x: x >= 14)
 
-    lens = lens_x >> lens_y  #  >> lens_z  # >> gt_14 >> inc
+    lens = lens_x >> lens_y >> lens_z >> gt_14 >> inc
 
-    assert isinstance(lens, ComposedLens)
+    assert isinstance(lens, ComposedListKeyLens)
 
     error, result = lens(data)
 
     assert not error
     assert result == [15]
-
 

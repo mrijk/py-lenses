@@ -1,4 +1,4 @@
-from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens
+from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, DictLens
 from lenses.lens import LensError
 from lenses.predicate import Predicate
 
@@ -90,4 +90,20 @@ def test_error_in_predicate():
     error, result = lens(data)
 
     assert error
+
+
+def test_list_key_lens():
+    data = {"x": {"y": [1, 2, 3]}}
+
+    lens_x = DictLens[dict](key="x")
+    lens_y = ListKeyLens[dict, int](key="y")
+
+    lens = lens_x >> lens_y
+
+    # assert isinstance(lens, ComposedListKeyLens)
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == [1, 2, 3]
 

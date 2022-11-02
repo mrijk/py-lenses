@@ -1,12 +1,12 @@
-from lenses.key_lens import KeyLens
+from lenses.key_lens import KeyLens, DictLens
 from lenses.lens import ComposedLens
 
 
 def test_two_lenses():
     data = {"x": {"y": 42}}
 
-    lens_x = KeyLens[dict, dict](key="x")
-    lens_y = KeyLens[dict, int](key="y")
+    lens_x = DictLens[dict](key="x")
+    lens_y = DictLens[int](key="y")
 
     lens = lens_x >> lens_y
 
@@ -21,9 +21,9 @@ def test_two_lenses():
 def test_three_lenses():
     data = {"x": {"y": {"z": 42}}}
 
-    lens_x = KeyLens[dict, dict](key="x")
-    lens_y = KeyLens[dict, dict](key="y")
-    lens_z = KeyLens[dict, int](key="z")
+    lens_x = DictLens[dict](key="x")
+    lens_y = DictLens[dict](key="y")
+    lens_z = DictLens[int](key="z")
 
     lens = lens_x >> lens_y >> lens_z
 

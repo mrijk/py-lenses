@@ -1,8 +1,8 @@
-from typing import TypeVar, overload, get_args, Any
+from typing import TypeVar, overload
 
-from lenses.lens import LensError, Lens, ComposedListLens, ComposedLens
+from lenses.lens import LensError, Lens, ComposedLens
 from lenses.predicate import Predicate
-from lenses.transformer import BaseTransformer, Transformer
+from lenses.transformer import BaseTransformer
 
 R = TypeVar('R')
 S = TypeVar('S')
@@ -14,6 +14,18 @@ class KeyLens(BaseTransformer[R, S]):
     def __init__(self, key: str):
         self.key = key
         super().__init__(f=self.get_by_key)
+
+    @overload
+    def __rshift__(self, other: "ListKeyLens[S, T]") -> "FooListKeyLens[R, T]": ...
+
+    @overload
+    def __rshift__(self, other: "Lens[S, T]") -> "ComposedLens[R, T]": ...
+
+    def __rshift__(self, other: Lens[S, T]) -> "Lens[R, T]":
+        if isinstance(other, ListKeyLens):
+            return FooListKeyLens[R, T](self, other)
+        else:
+            return ComposedLens[R, T](self, other)
 
     def get_by_key(self, data: R) -> tuple[LensError | None, S | None]:
         match data:
@@ -43,12 +55,34 @@ class ListKeyLens(Lens[R, S]):
         return self.key_lens(data)
 
 
+class FooListKeyLens(Lens[R, S]):
+    def __init__(self, source: Lens, lens: ListKeyLens[T, U]):
+        self.source = source
+        self.lens = lens
+
+    def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
+        return ComposedListKeyLens[R, T](self, other)
+
+    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
+        errors, source = self.source(data)
+        if errors:
+            return errors, None
+
+        errors, source = self.lens.key_lens(source)
+        if errors:
+            return errors, None
+
+        result = [v for v in source]
+
+        return None, result
+
+
 class ComposedListKeyLens(Lens[R, S]):
     def __init__(self, source: Lens, lens: Lens[T, U]):
         self.source = source
         self.lens = lens
 
-    def __rshift__(self: Lens[R, S], other: Lens[S, U]) -> "ComposedListKeyLens[R, U]":
+    def __rshift__(self, other: Lens[S, U]) -> "ComposedListKeyLens[R, U]":
         args = other.__orig_class__.__args__[0]
         if args.__subclasscheck__(list):
             return ComposedFlattenListKeyLens[R, U](self, lens=other)
@@ -67,7 +101,7 @@ class ComposedListKeyLens(Lens[R, S]):
             predicate_results = [(v, self.lens(v)) for v in source]
             result = ((p[0], v) for v, p in predicate_results if p[1] or p[0])
         else:
-            result = (self.lens(v) for v in source)
+            result = [self.lens(v) for v in source]
 
         errors, values = list(zip(*result))
 
