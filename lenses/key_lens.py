@@ -1,3 +1,5 @@
+import json
+from dataclasses import dataclass
 from typing import TypeVar, overload
 
 from lenses.lens import LensError, Lens, ComposedLens
@@ -15,6 +17,15 @@ class KeyLens(BaseTransformer[R, S]):
         self.key = key
         super().__init__(f=self.get_by_key)
 
+    def to_json(self) -> dict:
+        type_0, type_1 = self.__orig_class__.__args__
+        return {
+            "type": self.__class__.__name__,
+            "from": type_0.__name__,
+            "to": type_1.__name__,
+            "key": self.key
+        }
+
     @overload
     def __rshift__(self, other: "ListKeyLens[S, T]") -> "FooListKeyLens[R, T]": ...
 
@@ -31,6 +42,8 @@ class KeyLens(BaseTransformer[R, S]):
         match data:
             case None:
                 return None, None
+            case dict() if data is None:
+                return None, None
             case _:
                 try:
                     return None, data[self.key]
@@ -38,7 +51,22 @@ class KeyLens(BaseTransformer[R, S]):
                     return LensError(msg=f"Field {self.key} missing in {data}", key=self.key), None
 
 
+class NullableKeyLens(KeyLens[R, S]):
+    def get_by_key(self, data: R) -> tuple[LensError | None, S | None]:
+        match data:
+            case None:
+                return None, None
+            case dict() if data is None:
+                return None, None
+            case _:
+                try:
+                    return None, data[self.key]
+                except KeyError:
+                    return None, None
+
+
 DictLens = KeyLens[dict, T]
+NullableDictLens = NullableKeyLens[dict, T]
 
 
 class ListKeyLens(Lens[R, S]):

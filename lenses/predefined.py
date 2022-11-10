@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Any
 
 from lenses.predicate import Predicate
 from lenses.transformer import Transformer
@@ -29,4 +29,7 @@ def gt(value: T) -> Predicate[T]:
 all_true = Transformer[list[bool], bool](all)
 
 any_true = Transformer[list[bool], bool](any)
+
+
+not_none = Predicate[int | None](lambda x: x is not None)
 

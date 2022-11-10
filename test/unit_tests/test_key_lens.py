@@ -6,7 +6,7 @@ from lenses.predicate import Predicate
 def test_single():
     data = {"x": 42}
 
-    lens = KeyLens[dict, int](key="x")
+    lens = DictLens[int](key="x")
 
     error, result = lens(data)
 
@@ -17,7 +17,7 @@ def test_single():
 def test_missing_key():
     data = {"x": 42}
 
-    lens_q = KeyLens[dict, int](key="q")
+    lens_q = DictLens[int](key="q")
 
     error, result = lens_q(data)
 
@@ -30,7 +30,7 @@ def test_missing_key():
 def test_missing_list_key():
     data = {"x": [1, 2, 3]}
 
-    lens_q = ListKeyLens[dict, int](key="q")
+    lens_q = DictLens[int](key="q")
 
     error, result = lens_q(data)
 
@@ -44,7 +44,7 @@ def test_missing_composed_list_key():
     data = {"x": []}
 
     lens_x = ListKeyLens[dict, dict](key="z")
-    lens_y = KeyLens[dict, int](key="y")
+    lens_y = DictLens[int](key="y")
 
     lens = lens_x >> lens_y
 

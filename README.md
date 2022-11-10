@@ -4,6 +4,6 @@ Experimental lens like library in Python
 Goals:
 - reusability and composition of lenses
 - typesafe
-- simple syntax
+- easy syntax
 
 

@@ -31,6 +31,9 @@ class Lens(Generic[R, S]):
     def __add__(self, other: "Lens[R, S2]") -> "CombinedLens[R, tuple[S, S2]]":
         return CombinedLens(lens1=self, lens2=other)
 
+    def to_json(self) -> dict:
+        pass
+
 
 def combine(result: Generator) -> tuple[LensError | None, tuple | None]:
     errors, values = list(zip(*result))
@@ -61,6 +64,12 @@ class Combined3Lens(Lens[R, tuple[S1, S2, S3]]):
         self.lens2 = lens2
         self.lens3 = lens3
 
+    def to_json(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "lenses": [self.lens1.to_json(), self.lens2.to_json(), self.lens3.to_json()],
+        }
+
     def __add__(self: Lens[R, tuple[S1, S2, S3]], other: Lens[R, S4]) -> "Combined4Lens[R, tuple[S1, S2, S3, S4]]":
         return Combined4Lens(lens1=self.lens1, lens2=self.lens2, lens3=self.lens3, lens4=other)
 
@@ -85,6 +94,12 @@ class CombinedLens(Lens[R, tuple[S1, S2]]):
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2]):
         self.lens1 = lens1
         self.lens2 = lens2
+
+    def to_json(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "lenses": [self.lens1.to_json(), self.lens2.to_json()],
+        }
 
     def __or__(self, other: Lens[tuple[S1, S2], T]) -> ComposedFlattenTupleLens[R, T]:
         return ComposedFlattenTupleLens(lens1=self, lens2=other)
