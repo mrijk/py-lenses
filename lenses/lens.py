@@ -47,34 +47,47 @@ def combine(result: Generator) -> tuple[LensError | None, tuple | None]:
 
 class Combined4Lens(Lens[R, tuple[S1, S2, S3, S4]]):
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3], lens4: Lens[R, S4]):
-        self.lens1 = lens1
-        self.lens2 = lens2
-        self.lens3 = lens3
-        self.lens4 = lens4
+        self.lenses = [lens1, lens2, lens3, lens4]
+
+    def to_json(self) -> dict:
+        lenses = [lens.to_json() for lens in self.lenses]
+        from_type = lenses[0]["from"]
+        to = (lens["to"] for lens in lenses)
+
+        return {
+            "type": self.__class__.__name__,
+            "from": from_type,
+            "to": "tuple[" + ", ".join(to) + "]",
+            "lenses": lenses,
+        }
 
     def __call__(self: Lens[R, tuple[S1, S2, S3, S4]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3, S4] | None]:
-        result = (lens(data) for lens in [self.lens1, self.lens2, self.lens3, self.lens4])
+        result = (lens(data) for lens in self.lenses)
 
         return combine(result)
 
 
 class Combined3Lens(Lens[R, tuple[S1, S2, S3]]):
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3]):
-        self.lens1 = lens1
-        self.lens2 = lens2
-        self.lens3 = lens3
+        self.lenses = [lens1, lens2, lens3]
 
     def to_json(self) -> dict:
+        lenses = [lens.to_json() for lens in self.lenses]
+        from_type = lenses[0]["from"]
+        to = (lens["to"] for lens in lenses)
+
         return {
             "type": self.__class__.__name__,
-            "lenses": [self.lens1.to_json(), self.lens2.to_json(), self.lens3.to_json()],
+            "from": from_type,
+            "to": "tuple[" + ", ".join(to) + "]",
+            "lenses": lenses,
         }
 
     def __add__(self: Lens[R, tuple[S1, S2, S3]], other: Lens[R, S4]) -> "Combined4Lens[R, tuple[S1, S2, S3, S4]]":
-        return Combined4Lens(lens1=self.lens1, lens2=self.lens2, lens3=self.lens3, lens4=other)
+        return Combined4Lens(*self.lenses, lens4=other)
 
     def __call__(self: Lens[R, tuple[S1, S2, S3]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3] | None]:
-        result = (lens(data) for lens in [self.lens1, self.lens2, self.lens3])
+        result = (lens(data) for lens in self.lenses)
 
         return combine(result)
 
@@ -92,13 +105,20 @@ class ComposedFlattenTupleLens(Lens[R, T]):
 class CombinedLens(Lens[R, tuple[S1, S2]]):
     """lens = KeyLens(key="x") + KeyLens(key="y")"""
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2]):
+        self.lenses = [lens1, lens2]
         self.lens1 = lens1
         self.lens2 = lens2
 
     def to_json(self) -> dict:
+        lenses = [lens.to_json() for lens in self.lenses]
+        from_type = lenses[0]["from"]
+        to = (lens["to"] for lens in lenses)
+
         return {
             "type": self.__class__.__name__,
-            "lenses": [self.lens1.to_json(), self.lens2.to_json()],
+            "from": from_type,
+            "to": "tuple[" + ", ".join(to) + "]",
+            "lenses": lenses,
         }
 
     def __or__(self, other: Lens[tuple[S1, S2], T]) -> ComposedFlattenTupleLens[R, T]:
@@ -108,7 +128,7 @@ class CombinedLens(Lens[R, tuple[S1, S2]]):
         return ComposedTupleLens(lens1=self, lens2=other)
 
     def __add__(self: Lens[R, tuple[S1, S2]], other: Lens[R, S3]) -> "Combined3Lens[R, tuple[S1, S2, S3]]":
-        return Combined3Lens(lens1=self.lens1, lens2=self.lens2, lens3=other)
+        return Combined3Lens(*self.lenses, lens3=other)
 
     def __call__(self: Lens[R, tuple[S1, S2]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2] | None]:
         match data:
@@ -141,6 +161,17 @@ class ComposedLens(Lens[R, T]):
     def __init__(self, lens1: Lens[R, S], lens2: Lens[S, T]):
         self.lens1 = lens1
         self.lens2 = lens2
+
+    def to_json(self) -> dict:
+        lens1_json = self.lens1.to_json()
+        lens2_json = self.lens2.to_json()
+
+        return {
+            "type": self.__class__.__name__,
+            "from": lens1_json["from"],
+            "to": lens2_json["to"],
+            "lenses": [lens1_json, lens2_json]
+        }
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, T | None]:
         match data:
