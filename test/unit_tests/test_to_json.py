@@ -57,7 +57,7 @@ def test_combined_2_lens_to_json():
 
     expected = """
     {
-        "type": "CombinedLens",
+        "type": "Combined2Lens",
         "from": "dict",
         "to": "tuple[int, int]",
         "lenses": [
@@ -183,7 +183,7 @@ def test_composed_and_combined():
                 "key": "x"
             },
             {
-                "type": "CombinedLens",
+                "type": "Combined2Lens",
                 "from": "dict",
                 "to": "tuple[str, str]",
                 "lenses": [

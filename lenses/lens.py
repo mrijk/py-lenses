@@ -28,8 +28,8 @@ class Lens(Generic[R, S]):
     def __rshift__(self, other: "Lens[S, T]") -> "Lens[R, T]":
         return ComposedLens[R, T](self, other)
 
-    def __add__(self, other: "Lens[R, S2]") -> "CombinedLens[R, tuple[S, S2]]":
-        return CombinedLens(lens1=self, lens2=other)
+    def __add__(self, other: "Lens[R, S2]") -> "Combined2Lens[R, tuple[S, S2]]":
+        return Combined2Lens(lens1=self, lens2=other)
 
     def to_json(self) -> dict:
         pass
@@ -45,9 +45,9 @@ def combine(result: Generator) -> tuple[LensError | None, tuple | None]:
         return None, tuple(values)
 
 
-class Combined4Lens(Lens[R, tuple[S1, S2, S3, S4]]):
-    def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3], lens4: Lens[R, S4]):
-        self.lenses = [lens1, lens2, lens3, lens4]
+class CombinedLens(Lens[R, S]):
+    def __init__(self, lenses):
+        self.lenses = lenses
 
     def to_json(self) -> dict:
         lenses = [lens.to_json() for lens in self.lenses]
@@ -61,35 +61,29 @@ class Combined4Lens(Lens[R, tuple[S1, S2, S3, S4]]):
             "lenses": lenses,
         }
 
-    def __call__(self: Lens[R, tuple[S1, S2, S3, S4]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3, S4] | None]:
+    def __call__(self, data: R, **kwargs):
         result = (lens(data) for lens in self.lenses)
 
         return combine(result)
 
 
-class Combined3Lens(Lens[R, tuple[S1, S2, S3]]):
+class Combined4Lens(CombinedLens[R, S]):
+    def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3], lens4: Lens[R, S4]):
+        super().__init__([lens1, lens2, lens3, lens4])
+
+    def __call__(self: Lens[R, tuple[S1, S2, S3, S4]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3, S4] | None]:
+        return super().__call__(data, **kwargs)
+
+
+class Combined3Lens(CombinedLens[R, S]):
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2], lens3: Lens[R, S3]):
-        self.lenses = [lens1, lens2, lens3]
-
-    def to_json(self) -> dict:
-        lenses = [lens.to_json() for lens in self.lenses]
-        from_type = lenses[0]["from"]
-        to = (lens["to"] for lens in lenses)
-
-        return {
-            "type": self.__class__.__name__,
-            "from": from_type,
-            "to": "tuple[" + ", ".join(to) + "]",
-            "lenses": lenses,
-        }
+        super().__init__([lens1, lens2, lens3])
 
     def __add__(self: Lens[R, tuple[S1, S2, S3]], other: Lens[R, S4]) -> "Combined4Lens[R, tuple[S1, S2, S3, S4]]":
         return Combined4Lens(*self.lenses, lens4=other)
 
     def __call__(self: Lens[R, tuple[S1, S2, S3]], data: R, **kwargs) -> tuple[LensError | None, tuple[S1, S2, S3] | None]:
-        result = (lens(data) for lens in self.lenses)
-
-        return combine(result)
+        return super().__call__(data, **kwargs)
 
 
 class ComposedFlattenTupleLens(Lens[R, T]):
@@ -102,24 +96,12 @@ class ComposedFlattenTupleLens(Lens[R, T]):
         return self.lens2(source)
 
 
-class CombinedLens(Lens[R, tuple[S1, S2]]):
+class Combined2Lens(CombinedLens[R, S]):
     """lens = KeyLens(key="x") + KeyLens(key="y")"""
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2]):
-        self.lenses = [lens1, lens2]
         self.lens1 = lens1
         self.lens2 = lens2
-
-    def to_json(self) -> dict:
-        lenses = [lens.to_json() for lens in self.lenses]
-        from_type = lenses[0]["from"]
-        to = (lens["to"] for lens in lenses)
-
-        return {
-            "type": self.__class__.__name__,
-            "from": from_type,
-            "to": "tuple[" + ", ".join(to) + "]",
-            "lenses": lenses,
-        }
+        super().__init__([lens1, lens2])
 
     def __or__(self, other: Lens[tuple[S1, S2], T]) -> ComposedFlattenTupleLens[R, T]:
         return ComposedFlattenTupleLens(lens1=self, lens2=other)
@@ -138,11 +120,11 @@ class CombinedLens(Lens[R, tuple[S1, S2]]):
                 match self.lens1(data), self.lens2(data):
                     case (None, value1), (None, value2):
                         match self.lens1, self.lens2:
-                            case CombinedLens(), CombinedLens():
+                            case Combined2Lens(), Combined2Lens():
                                 return None, (*value1, *value2)
-                            case CombinedLens(), Lens():
+                            case Combined2Lens(), Lens():
                                 return None, (*value1, value2)
-                            case Lens(), CombinedLens():
+                            case Lens(), Combined2Lens():
                                 return None, (value1, *value2)
                             case Lens(), Lens():
                                 return None, (value1, value2)

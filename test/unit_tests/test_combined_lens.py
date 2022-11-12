@@ -1,5 +1,5 @@
 from lenses.key_lens import DictLens
-from lenses.lens import CombinedLens, Combined3Lens, Combined4Lens, ComposedTupleLens
+from lenses.lens import Combined2Lens, Combined3Lens, Combined4Lens, ComposedTupleLens
 from lenses.transformer import Transformer
 
 
@@ -11,7 +11,7 @@ def test_2_added_lenses():
 
     lens = lens_x + lens_y
 
-    assert isinstance(lens, CombinedLens)
+    assert isinstance(lens, Combined2Lens)
 
     error, result = lens(data)
 
@@ -62,7 +62,7 @@ def test_added_lenses_with_missing_keys():
 
     lens = lens_x + lens_y
 
-    assert isinstance(lens, CombinedLens)
+    assert isinstance(lens, Combined2Lens)
 
     error, result = lens(data)
 
