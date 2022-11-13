@@ -1,7 +1,8 @@
 import json
 
-from lenses.key_lens import DictLens
+from lenses.key_lens import DictLens, NullableDictLens, ListKeyLens
 from lenses.lens import ListLens
+from lenses.predefined import inc
 from lenses.predicate import Predicate
 
 
@@ -13,6 +14,21 @@ def test_key_lens_to_json():
         "type": "KeyLens", 
         "from": "dict", 
         "to": "int", 
+        "key": "x"
+    }
+    """
+
+    check_against_expected(lens, expected)
+
+
+def test_nullable_key_lens_to_json():
+    lens = NullableDictLens[int | None](key="x")
+
+    expected = """
+    {
+        "type": "NullableKeyLens", 
+        "from": "dict", 
+        "to": "int | None", 
         "key": "x"
     }
     """
@@ -224,6 +240,21 @@ def test_list_lens_to_json():
     check_against_expected(lens, expected)
 
 
+def test_list_key_lens_to_json():
+    lens = ListKeyLens[dict, bool](key="x")
+
+    expected = """
+    {
+        "type": "ListKeyLens",
+        "from": "list[dict]",
+        "to": "list[bool]",
+        "key": "x"
+    }
+    """
+
+    check_against_expected(lens, expected)
+
+
 def test_predicate_to_json():
     gt_13 = Predicate[int](lambda x: x > 13)
 
@@ -231,11 +262,25 @@ def test_predicate_to_json():
     {
         "type": "Predicate",
         "from": "int",
-        "to": "bool"
+        "to": "bool",
+        "can_throw": false
     }
     """
 
     check_against_expected(gt_13, expected)
+
+
+def test_transformer_to_json():
+    expected = """
+    {
+        "type": "Transformer",
+        "from": "int",
+        "to": "int",
+        "can_throw": false
+    }
+    """
+
+    check_against_expected(inc, expected)
 
 
 def check_against_expected(lens, expected):

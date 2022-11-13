@@ -62,6 +62,15 @@ class NullableKeyLens(KeyLens[R, S]):
                 except KeyError:
                     return None, None
 
+    def to_json(self) -> dict:
+        type_0, type_1 = self.__orig_class__.__args__
+        return {
+            "type": self.__class__.__name__,
+            "from": type_0.__name__,
+            "to": str(type_1),
+            "key": self.key
+        }
+
 
 DictLens = KeyLens[dict, T]
 NullableDictLens = NullableKeyLens[dict, T]
@@ -79,6 +88,15 @@ class ListKeyLens(Lens[R, S]):
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
         return self.key_lens(data)
+
+    def to_json(self) -> dict:
+        type_0, type_1 = self.__orig_class__.__args__
+        return {
+            "type": self.__class__.__name__,
+            "from": f"list[{type_0.__name__}]",
+            "to": f"list[{type_1.__name__}]",
+            "key": self.key_lens.key,
+        }
 
 
 class FooListKeyLens(Lens[R, S]):

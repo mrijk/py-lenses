@@ -1,8 +1,5 @@
-from typing import Any
-
 from lenses.key_lens import DictLens, ListKeyLens, NullableDictLens
 from lenses.predefined import not_none
-from lenses.predicate import Predicate
 
 
 def test_nullable_lens():

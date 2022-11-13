@@ -4,7 +4,6 @@ from lenses.lens import LensError, Lens
 
 R = TypeVar('R')
 S = TypeVar('S')
-T = TypeVar('T')
 
 
 class Transformer(Lens[R, S]):
@@ -17,11 +16,22 @@ class Transformer(Lens[R, S]):
             try:
                 result = self.f(data, **kwargs)
             except Exception as e:
-                return LensError(msg="Transformer has thrown an exception", details=str(e)), None
+                name = self.__class__.__name__
+                return LensError(msg=f"{name} has thrown an exception", details=str(e)), None
             else:
                 return None, result
         else:
             return None, self.f(data, **kwargs)
+
+    def to_json(self) -> dict:
+        type_0, type_1 = self.__orig_class__.__args__
+        # TODO: add information about the function here
+        return {
+            "type": self.__class__.__name__,
+            "from": type_0.__name__,
+            "to": type_1.__name__,
+            "can_throw": self.can_throw,
+        }
 
 
 class BaseTransformer(Lens[R, S]):
