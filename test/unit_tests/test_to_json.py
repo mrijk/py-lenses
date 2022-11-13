@@ -1,6 +1,8 @@
 import json
 
 from lenses.key_lens import DictLens
+from lenses.lens import ListLens
+from lenses.predicate import Predicate
 
 
 def test_key_lens_to_json():
@@ -163,7 +165,7 @@ def test_combined_4_lens_to_json():
     check_against_expected(lens, expected)
 
 
-def test_composed_and_combined():
+def test_composed_and_combined_to_json():
     lens_x = DictLens[dict](key="x")
     lens_y = DictLens[str](key="y")
     lens_z = DictLens[str](key="z")
@@ -206,6 +208,34 @@ def test_composed_and_combined():
     """
 
     check_against_expected(lens, expected)
+
+
+def test_list_lens_to_json():
+    lens = ListLens[dict]()
+
+    expected = """
+    {
+        "type": "ListLens",
+        "from": "list[dict]",
+        "to": "list[dict]"
+    }
+    """
+
+    check_against_expected(lens, expected)
+
+
+def test_predicate_to_json():
+    gt_13 = Predicate[int](lambda x: x > 13)
+
+    expected = """
+    {
+        "type": "Predicate",
+        "from": "int",
+        "to": "bool"
+    }
+    """
+
+    check_against_expected(gt_13, expected)
 
 
 def check_against_expected(lens, expected):

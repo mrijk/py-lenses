@@ -1,5 +1,3 @@
-import json
-from dataclasses import dataclass
 from typing import TypeVar, overload
 
 from lenses.lens import LensError, Lens, ComposedLens

@@ -1,6 +1,6 @@
 from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, ComposedFlattenListKeyLens, DictLens
-from lenses.lens import ListLens, ComposedListLens, ComposedLens
-from lenses.predefined import add, count, inc, gt
+from lenses.lens import ListLens, ComposedListLens
+from lenses.predefined import add, count, inc
 from lenses.predicate import Predicate
 
 

@@ -176,6 +176,16 @@ class ListLens(Lens[R, R]):
     def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, list[R] | None]:
         return None, data
 
+    def to_json(self) -> dict:
+        args = self.__orig_class__.__args__
+        type = args[0].__name__
+
+        return {
+            "type": self.__class__.__name__,
+            "from": f"list[{type}]",
+            "to": f"list[{type}]",
+        }
+
 
 class ComposedTupleLens(Lens[R, tuple[S1, S2]]):
     def __init__(self, lens1: Lens[R, tuple[S1, S2]], lens2: Lens[T, S1 | S2]):
