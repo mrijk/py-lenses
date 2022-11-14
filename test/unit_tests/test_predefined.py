@@ -1,7 +1,7 @@
 import pytest as pytest
 
 from lenses.key_lens import ListKeyLens
-from lenses.predefined import all_true, any_true, count, add, capitalize, reverse
+from lenses.predefined import all_true, any_true, count, add, capitalize, reverse, lower, upper
 
 
 def test_count():
@@ -16,6 +16,7 @@ def test_count():
 def test_add():
     data = [1, 2, 3]
 
+    # TODO: incorrect result type shown.
     error, result = add(data)
 
     assert not error
@@ -25,6 +26,10 @@ def test_add():
 @pytest.mark.parametrize(
     "values, expected",
     [
+        ((True, True), True),
+        ((True, False), False),
+        ({True, True}, True),
+        ({True, False}, False),
         ([True, True], True),
         ([True, False], False),
     ]
@@ -76,27 +81,23 @@ def test_any_true(values, expected):
     assert result is expected
 
 
-def test_capitalize():
+@pytest.mark.parametrize(
+    "transformer, expected",
+    [
+        (capitalize, ["The", "Quick", "Brown", "Fox"]),
+        (lower, ["the", "quick", "brown", "fox"]),
+        (upper, ["THE", "QUICK", "BROWN", "FOX"]),
+        (reverse, ["eht", "kciuq", "nworb", "xof"]),
+    ]
+)
+def test_string_operators(transformer, expected):
     data = {"x": ["the", "quick", "brown", "fox"]}
 
     lens_x = ListKeyLens[dict, str](key="x")
 
-    lens = lens_x >> capitalize
+    lens = lens_x >> transformer
 
     error, result = lens(data)
 
     assert not error
-    assert result == ["The", "Quick", "Brown", "Fox"]
-
-
-def test_reverse():
-    data = {"x": ["the", "quick", "brown", "fox"]}
-
-    lens_x = ListKeyLens[dict, str](key="x")
-
-    lens = lens_x >> reverse
-
-    error, result = lens(data)
-
-    assert not error
-    assert result == ["eht", "kciuq", "nworb", "xof"]
+    assert result == expected

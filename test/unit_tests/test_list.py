@@ -142,6 +142,7 @@ def test_filtered_list():
 
     lens = lens_x >> lens_y >> gt_13 | count
 
+    # TODO: incorrect result
     error, result = lens(data)
 
     assert not error

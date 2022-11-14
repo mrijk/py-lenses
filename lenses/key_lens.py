@@ -1,4 +1,4 @@
-from typing import TypeVar, overload
+from typing import TypeVar, overload, Iterable
 
 from lenses.lens import LensError, Lens, ComposedLens
 from lenses.predicate import Predicate
@@ -80,7 +80,7 @@ class ListKeyLens(Lens[R, S]):
     def __init__(self, key: str):
         self.key_lens = KeyLens(key=key)
 
-    def __or__(self, other: Lens[list[S], T]) -> "ComposedFlattenListKeyLens[R, T]":
+    def __or__(self, other: Lens[Iterable[S], T]) -> "ComposedFlattenListKeyLens[R, T]":
         return ComposedFlattenListKeyLens[R, T](self.key_lens, other)
 
     def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
