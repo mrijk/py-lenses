@@ -114,6 +114,21 @@ def test_list_in_dict_3():
     assert result == [[13, 14]]
 
 
+def test_list_count():
+    data = [{"x": 1}, {"x": 2}]
+
+    lens_x = ListLens[dict]()
+
+    lens = lens_x | count
+
+    assert isinstance(lens, ComposedListLens)
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == 2
+
+
 def test_aggregate_list():
     data = {"x": [{"y": {"z": 13}}, {"y": {"z": 14}}]}
 
@@ -156,7 +171,7 @@ def test_complex():
     lens_x = DictLens[dict](key="x")
     lens_y = ListKeyLens[dict, dict](key="y")
     lens_z = DictLens[int](key="z")
-    gt_14  = Predicate[int](lambda x: x >= 14)
+    gt_14 = Predicate[int](lambda x: x >= 14)
 
     lens = lens_x >> lens_y >> lens_z >> gt_14 >> inc
 

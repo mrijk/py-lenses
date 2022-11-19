@@ -1,7 +1,8 @@
 import pytest as pytest
 
 from lenses.key_lens import ListKeyLens
-from lenses.predefined import all_true, any_true, count, add, capitalize, reverse, lower, upper
+from lenses.predefined import all_true, any_true, count, add, capitalize, reverse, lower, upper, swapcase, islower, \
+    istitle, isupper, title, endswith, startswith
 
 
 def test_count():
@@ -16,7 +17,6 @@ def test_count():
 def test_add():
     data = [1, 2, 3]
 
-    # TODO: incorrect result type shown.
     error, result = add(data)
 
     assert not error
@@ -88,6 +88,8 @@ def test_any_true(values, expected):
         (lower, ["the", "quick", "brown", "fox"]),
         (upper, ["THE", "QUICK", "BROWN", "FOX"]),
         (reverse, ["eht", "kciuq", "nworb", "xof"]),
+        (title, ["The", "Quick", "Brown", "Fox"]),
+        (swapcase, ["THE", "QUICK", "BROWN", "FOX"]),
     ]
 )
 def test_string_operators(transformer, expected):
@@ -101,3 +103,40 @@ def test_string_operators(transformer, expected):
 
     assert not error
     assert result == expected
+
+
+def test_multiple_operators():
+    data = {"x": ["The", "quick", "brown", "fox"]}
+
+    lens_x = ListKeyLens[dict, str](key="x")
+
+    lens = lens_x >> lower >> reverse >> title
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == ["Eht", "Kciuq", "Nworb", "Xof"]
+
+
+@pytest.mark.parametrize(
+    "transformer, expected",
+    [
+        (endswith("ck"), [False, True, False, False]),
+        (islower, [False, True, False, True]),
+        (istitle, [False, False, True, False]),
+        (isupper, [True, False, False, False]),
+        (startswith("B"), [False, False, True, False])
+    ]
+)
+def test_string_predicates(transformer, expected):
+    data = {"x": ["THE", "quick", "Brown", "fox"]}
+
+    lens_x = ListKeyLens[dict, str](key="x")
+
+    lens = lens_x >> transformer
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == expected
+

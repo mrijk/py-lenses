@@ -1,4 +1,4 @@
-from typing import TypeVar, Any, Iterable
+from typing import TypeVar, Iterable
 
 from lenses.predicate import Predicate
 from lenses.transformer import Transformer
@@ -7,7 +7,7 @@ from lenses.transformer import Transformer
 
 T = TypeVar('T')
 
-add = Transformer[Iterable[T], T](sum, can_throw=True)
+add = Transformer[Iterable[int], int](sum, can_throw=True)
 
 to_list = Transformer[Iterable, list](list)
 
@@ -19,13 +19,34 @@ dec = Transformer[int, int](lambda x: x - 1)
 
 # String operators
 
-capitalize = Transformer[str, str](lambda s: s.capitalize())
+capitalize = Transformer[str, str](str.capitalize)
 
-upper = Transformer[str, str](lambda s: s.upper())
+upper = Transformer[str, str](str.upper)
 
-lower = Transformer[str, str](lambda s: s.lower())
+lower = Transformer[str, str](str.lower)
 
 reverse = Transformer[str, str](lambda s: s[::-1])
+
+swapcase = Transformer[str, str](str.swapcase)
+
+title = Transformer[str, str](str.title)
+
+# String predicates
+
+
+def endswith(prefix: str) -> Transformer[str, bool]:
+    return Transformer[str, bool](lambda s: s.endswith(prefix))
+
+
+def startswith(prefix: str) -> Transformer[str, bool]:
+    return Transformer[str, bool](lambda s: s.startswith(prefix))
+
+
+islower = Transformer[str, bool](str.islower)
+
+istitle = Transformer[str, bool](str.istitle)
+
+isupper = Transformer[str, bool](str.isupper)
 
 
 def gt(value: T) -> Predicate[T]:

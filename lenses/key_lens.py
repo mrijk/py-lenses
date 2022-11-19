@@ -145,7 +145,7 @@ class ComposedListKeyLens(Lens[R, S]):
             predicate_results = [(v, self.lens(v)) for v in source]
             result = ((p[0], v) for v, p in predicate_results if p[1] or p[0])
         else:
-            result = [self.lens(v) for v in source]
+            result = [self.lens(v, **kwargs) for v in source]
 
         errors, values = list(zip(*result))
 

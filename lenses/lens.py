@@ -169,8 +169,22 @@ class ComposedLens(Lens[R, T]):
                         return error, None
 
 
+class ComposedListLens(Lens[R, S]):
+    def __init__(self, lens: Lens[R, S]):
+        self.lens = lens
+
+    def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, list[S] | None]:
+        result = (self.lens(v) for v in data)
+        errors, values = list(zip(*result))
+
+        if any(errors):
+            return LensError(msg="Error in list"), None
+        else:
+            return None, list(values)
+
+
 class ListLens(Lens[R, R]):
-    def __or__(self, other: "Lens[S, T]") -> "Lens[list[R], list[T]]":
+    def __or__(self, other: Lens[list[R], S]) -> ComposedListLens[R, S]:
         return ComposedListLens[R, S](lens=other)
 
     def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, list[R] | None]:
@@ -205,16 +219,3 @@ class ComposedTupleLens(Lens[R, tuple[S1, S2]]):
         else:
             return None, tuple(values)
 
-
-class ComposedListLens(Lens[list[R], list[S]]):
-    def __init__(self, lens: Lens[R, S]):
-        self.lens = lens
-
-    def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, list[S] | None]:
-        result = (self.lens(v) for v in data)
-        errors, values = list(zip(*result))
-
-        if any(errors):
-            return LensError(msg="Error in list"), None
-        else:
-            return None, list(values)
