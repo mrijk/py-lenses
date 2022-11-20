@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any, Generator
+from typing import Generic, TypeVar, Any, Generator, Iterable
 
 R = TypeVar('R')
 S = TypeVar('S')
@@ -183,9 +183,22 @@ class ComposedListLens(Lens[R, S]):
             return None, list(values)
 
 
-class ListLens(Lens[R, R]):
-    def __or__(self, other: Lens[list[R], S]) -> ComposedListLens[R, S]:
+class FlattenListLens(Lens[R, S]):
+    def __init__(self, source: Lens[R, R],  lens: Lens[Iterable[R], S]):
+        self.source = source
+        self.lens = lens
+
+    def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, S | None]:
+        error, result = self.source(data)
+        return self.lens(result)
+
+
+class ListLens(Generic[R]):
+    def __rshift__(self, other: Lens[Iterable[R], S]) -> ComposedListLens[R, S]:
         return ComposedListLens[R, S](lens=other)
+
+    def __or__(self, other: Lens[Iterable[R], S]) -> FlattenListLens[R, S]:
+        return FlattenListLens[R, S](source=self, lens=other)
 
     def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, list[R] | None]:
         return None, data

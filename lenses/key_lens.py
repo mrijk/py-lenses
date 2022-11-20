@@ -49,7 +49,7 @@ class KeyLens(BaseTransformer[R, S]):
                     return LensError(msg=f"Field {self.key} missing in {data}", key=self.key), None
 
 
-class NullableKeyLens(KeyLens[R, S]):
+class NullableKeyLens(KeyLens[R, S | None]):
     def get_by_key(self, data: R) -> tuple[LensError | None, S | None]:
         match data:
             case None:
@@ -67,7 +67,7 @@ class NullableKeyLens(KeyLens[R, S]):
         return {
             "type": self.__class__.__name__,
             "from": type_0.__name__,
-            "to": str(type_1),
+            "to": f"{type_1.__name__} | None",
             "key": self.key
         }
 
@@ -82,6 +82,9 @@ class ListKeyLens(Lens[R, S]):
 
     def __or__(self, other: Lens[Iterable[S], T]) -> "ComposedFlattenListKeyLens[R, T]":
         return ComposedFlattenListKeyLens[R, T](self.key_lens, other)
+
+    @overload
+    def __rshift__(self, other: NullableKeyLens[S, T]) -> "ComposedListKeyLens[R, T | None]": ...
 
     def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
         return ComposedListKeyLens[R, T](self.key_lens, other)
@@ -135,7 +138,7 @@ class ComposedListKeyLens(Lens[R, S]):
     def __or__(self: Lens[R, T], other: Lens[list[T], U]) -> "ComposedFlattenListKeyLens[R, U]":
         return ComposedFlattenListKeyLens[R, U](self, lens=other)
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
+    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S | None] | None]:
         errors, source = self.source(data)
         if errors:
             return errors, None
@@ -153,6 +156,15 @@ class ComposedListKeyLens(Lens[R, S]):
             return LensError(msg="Error in list", details=errors), None
         else:
             return None, list(values)
+
+    def to_json(self) -> dict:
+        lens_json = self.lens.to_json()
+        return {
+            "type": self.__class__.__name__,
+            "from": lens_json["from"],
+            "to": lens_json["to"],
+            "lens": lens_json,
+        }
 
 
 class ComposedFlattenListKeyLens(ComposedListKeyLens[R, T]):

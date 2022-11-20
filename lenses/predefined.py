@@ -25,11 +25,29 @@ upper = Transformer[str, str](str.upper)
 
 lower = Transformer[str, str](str.lower)
 
+
+def removeprefix(prefix: str) -> Transformer[str, str]:
+    return Transformer[str, str](lambda s: s.removeprefix(prefix))
+
+
+def removesuffix(suffix: str) -> Transformer[str, str]:
+    return Transformer[str, str](lambda s: s.removesuffix(suffix))
+
+
+def replace(old: str, new: str) -> Transformer[str, str]:
+    return Transformer[str, str](lambda s: s.replace(old, new))
+
+
 reverse = Transformer[str, str](lambda s: s[::-1])
 
 swapcase = Transformer[str, str](str.swapcase)
 
 title = Transformer[str, str](str.title)
+
+
+def find(sub: str) -> Transformer[str, int]:
+    return Transformer[str, int](lambda s: s.find(sub))
+
 
 # String predicates
 
@@ -41,6 +59,8 @@ def endswith(prefix: str) -> Transformer[str, bool]:
 def startswith(prefix: str) -> Transformer[str, bool]:
     return Transformer[str, bool](lambda s: s.startswith(prefix))
 
+
+isidentifier = Transformer[str, bool](str.isidentifier)
 
 islower = Transformer[str, bool](str.islower)
 

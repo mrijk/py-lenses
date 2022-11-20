@@ -22,7 +22,7 @@ def test_key_lens_to_json():
 
 
 def test_nullable_key_lens_to_json():
-    lens = NullableDictLens[int | None](key="x")
+    lens = NullableDictLens[int](key="x")
 
     expected = """
     {
@@ -40,7 +40,7 @@ def test_composed_2_lens_to_json():
     lens_x = DictLens[dict](key="x")
     lens_y = DictLens[int](key="y")
 
-    lens = lens_x | lens_y
+    lens = lens_x >> lens_y
 
     expected = """
     {
@@ -61,6 +61,29 @@ def test_composed_2_lens_to_json():
                 "key": "y"
             }
         ]
+    }
+    """
+
+    check_against_expected(lens, expected)
+
+
+def test_nullable_composed_lens_to_json():
+    lens_x = ListKeyLens[dict, dict](key="x")
+    lens_y = NullableDictLens[int](key="y")
+
+    lens = lens_x >> lens_y
+
+    expected = """
+    {
+        "type": "ComposedListKeyLens",
+        "from": "dict",
+        "to": "int | None",
+        "lens": {
+            "type": "NullableKeyLens", 
+            "from": "dict", 
+            "to": "int | None", 
+            "key": "y"
+        }
     }
     """
 

@@ -1,5 +1,5 @@
 from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, ComposedFlattenListKeyLens, DictLens
-from lenses.lens import ListLens, ComposedListLens
+from lenses.lens import ListLens, ComposedListLens, FlattenListLens
 from lenses.predefined import add, count, inc
 from lenses.predicate import Predicate
 
@@ -24,7 +24,7 @@ def test_list():
     all = ListLens[dict]()
     lens_x = KeyLens[dict, int](key="x")
 
-    lens = all | lens_x
+    lens = all >> lens_x
 
     assert isinstance(lens, ComposedListLens)
 
@@ -41,7 +41,7 @@ def test_plain_list():
     lens_x = KeyLens[dict, int](key="x")
     lens_y = KeyLens[dict, int](key="y")
 
-    lens = all | (lens_x + lens_y)
+    lens = all >> (lens_x + lens_y)
 
     assert isinstance(lens, ComposedListLens)
 
@@ -117,11 +117,11 @@ def test_list_in_dict_3():
 def test_list_count():
     data = [{"x": 1}, {"x": 2}]
 
-    lens_x = ListLens[dict]()
+    lens_all = ListLens[dict]()
 
-    lens = lens_x | count
+    lens = lens_all | count
 
-    assert isinstance(lens, ComposedListLens)
+    assert isinstance(lens, FlattenListLens)
 
     error, result = lens(data)
 

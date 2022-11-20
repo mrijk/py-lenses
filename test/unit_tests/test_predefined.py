@@ -2,7 +2,7 @@ import pytest as pytest
 
 from lenses.key_lens import ListKeyLens
 from lenses.predefined import all_true, any_true, count, add, capitalize, reverse, lower, upper, swapcase, islower, \
-    istitle, isupper, title, endswith, startswith
+    istitle, isupper, title, endswith, startswith, replace, removeprefix, removesuffix
 
 
 def test_count():
@@ -87,6 +87,9 @@ def test_any_true(values, expected):
         (capitalize, ["The", "Quick", "Brown", "Fox"]),
         (lower, ["the", "quick", "brown", "fox"]),
         (upper, ["THE", "QUICK", "BROWN", "FOX"]),
+        (removeprefix("th"), ["e", "quick", "brown", "fox"]),
+        (removesuffix("ck"), ["the", "qui", "brown", "fox"]),
+        (replace("o", "oo"), ["the", "quick", "broown", "foox"]),
         (reverse, ["eht", "kciuq", "nworb", "xof"]),
         (title, ["The", "Quick", "Brown", "Fox"]),
         (swapcase, ["THE", "QUICK", "BROWN", "FOX"]),

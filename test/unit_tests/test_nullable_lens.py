@@ -5,7 +5,7 @@ from lenses.predefined import not_none
 def test_nullable_lens():
     data = {}
 
-    lens = NullableDictLens[int | None](key="x")
+    lens = NullableDictLens[int](key="x")
 
     error, result = lens(data)
 
@@ -13,13 +13,28 @@ def test_nullable_lens():
     assert result is None
 
 
-def test_nested_nullable_lens():
+def test_nested_2_nullable_lens():
     data = {}
 
     lens_x = NullableDictLens[dict](key="x")
     lens_y = DictLens[int](key="y")
 
     lens = lens_x >> lens_y
+
+    error, result = lens(data)
+
+    assert not error
+    assert result is None
+
+
+def test_nested_3_nullable_lens():
+    data = {}
+
+    lens_x = NullableDictLens[dict](key="x")
+    lens_y = DictLens[dict](key="y")
+    lens_z = DictLens[str](key="z")
+
+    lens = lens_x >> lens_y >> lens_z
 
     error, result = lens(data)
 
@@ -35,9 +50,9 @@ def test_combined_nullable_lens():
     lens_x = ListKeyLens[dict, dict](key="x")
     lens_y = NullableDictLens[int](key="y")
 
-    lens = lens_x >> lens_y >> not_none
+    lens = lens_x >> lens_y
 
     error, result = lens(data)
 
     assert not error
-    assert result == [1]
+    assert result == [1, None]
