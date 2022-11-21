@@ -2,7 +2,7 @@ import json
 
 from lenses.key_lens import DictLens, NullableDictLens, ListKeyLens
 from lenses.lens import ListLens
-from lenses.predefined import inc
+from lenses.predefined import inc, count
 from lenses.predicate import Predicate
 
 
@@ -272,6 +272,22 @@ def test_list_key_lens_to_json():
         "from": "list[dict]",
         "to": "list[bool]",
         "key": "x"
+    }
+    """
+
+    check_against_expected(lens, expected)
+
+
+def test_flatten_list_lens_to_json():
+    lens_all = ListLens[dict]()
+
+    lens = lens_all | count
+
+    expected = """
+    {
+        "type": "FlattenListLens",
+        "from": "list[dict]",
+        "to": "int"
     }
     """
 

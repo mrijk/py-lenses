@@ -173,6 +173,9 @@ class ComposedListLens(Lens[R, S]):
     def __init__(self, lens: Lens[R, S]):
         self.lens = lens
 
+    def __or__(self, other: Lens[Iterable[S], T]) -> "FlattenListLens[R, T]":
+        return FlattenListLens[R, S](source=self, lens=other)
+
     def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, list[S] | None]:
         result = (self.lens(v) for v in data)
         errors, values = list(zip(*result))
@@ -188,9 +191,18 @@ class FlattenListLens(Lens[R, S]):
         self.source = source
         self.lens = lens
 
-    def __call__(self, data: list[R], **kwargs) -> tuple[LensError | None, S | None]:
+    def __call__(self, data: Iterable[R], **kwargs) -> tuple[LensError | None, S | None]:
         error, result = self.source(data)
         return self.lens(result)
+
+    def to_json(self) -> dict:
+        source_json = self.source.to_json()
+        lens_json = self.lens.to_json()
+        return {
+            "type": self.__class__.__name__,
+            "from": source_json["from"],
+            "to": lens_json["to"],
+        }
 
 
 class ListLens(Generic[R]):

@@ -40,6 +40,11 @@ def replace(old: str, new: str) -> Transformer[str, str]:
 
 reverse = Transformer[str, str](lambda s: s[::-1])
 
+
+def strip(chars: str | None = None) -> Transformer[str, str]:
+    return Transformer[str, str](lambda s: s.strip(chars))
+
+
 swapcase = Transformer[str, str](str.swapcase)
 
 title = Transformer[str, str](str.title)
@@ -63,6 +68,12 @@ def startswith(prefix: str) -> Transformer[str, bool]:
 isidentifier = Transformer[str, bool](str.isidentifier)
 
 islower = Transformer[str, bool](str.islower)
+
+isnumeric = Transformer[str, bool](str.isnumeric)
+
+isprintable = Transformer[str, bool](str.isprintable)
+
+isspace = Transformer[str, bool](str.isspace)
 
 istitle = Transformer[str, bool](str.istitle)
 
