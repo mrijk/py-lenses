@@ -1,9 +1,11 @@
 import json
 
+
 from lenses.key_lens import DictLens, NullableDictLens, ListKeyLens
 from lenses.lens import ListLens
 from lenses.predefined import inc, count
 from lenses.predicate import Predicate
+from test.unit_tests.utils import check_against_expected
 
 
 def test_key_lens_to_json():
@@ -294,34 +296,3 @@ def test_flatten_list_lens_to_json():
     check_against_expected(lens, expected)
 
 
-def test_predicate_to_json():
-    gt_13 = Predicate[int](lambda x: x > 13)
-
-    expected = """
-    {
-        "type": "Predicate",
-        "from": "int",
-        "to": "bool",
-        "can_throw": false
-    }
-    """
-
-    check_against_expected(gt_13, expected)
-
-
-def test_transformer_to_json():
-    expected = """
-    {
-        "type": "Transformer",
-        "from": "int",
-        "to": "int",
-        "can_throw": false
-    }
-    """
-
-    check_against_expected(inc, expected)
-
-
-def check_against_expected(lens, expected):
-    result = lens.to_json()
-    assert json.loads(json.dumps(result)) == json.loads(expected)

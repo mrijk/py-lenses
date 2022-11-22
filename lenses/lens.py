@@ -19,9 +19,6 @@ class LensError:
 
 
 class Lens(Generic[R, S]):
-    def __call__(self, data: R | list[R], **kwargs) -> tuple[LensError | None, S | None]:
-        pass
-
     def __or__(self, other: "Lens[S, T]") -> "Lens[R, T]":
         return ComposedLens[R, T](self, other)
 

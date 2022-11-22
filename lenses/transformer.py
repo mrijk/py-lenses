@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Callable
 
 from lenses.lens import LensError, Lens
 
@@ -7,7 +7,7 @@ S = TypeVar('S')
 
 
 class Transformer(Lens[R, S]):
-    def __init__(self, f, can_throw: bool = False):
+    def __init__(self, f: Callable[[R], S], can_throw: bool = False):
         self.f = f
         self.can_throw = can_throw
 

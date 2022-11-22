@@ -13,7 +13,7 @@ class ComposedGenericTupleLens(Lens[R, tuple]):
         self.lens1 = lens1
         self.lens2 = lens2
 
-    def __call__(self: "ComposedTupleLens[R, tuple", data: R, **kwargs) -> tuple[LensError | None, tuple | None]:
+    def __call__(self: "ComposedTupleLens[R, tuple]", data: R, **kwargs) -> tuple[LensError | None, tuple | None]:
         errors, values = self.lens1(data)
         # TODO: add error handling
 
@@ -33,3 +33,8 @@ class DictItemLens(Lens):
 
     def __rshift__(self, other):
         return ComposedGenericTupleLens[R](lens1=self, lens2=other)
+
+    def to_json(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+        }

@@ -2,6 +2,7 @@ from lenses.key_lens import KeyLens
 from lenses.lens import ComposedLens
 from lenses.predefined import inc, dec
 from lenses.transformer import Transformer
+from test.unit_tests.utils import check_against_expected
 
 
 def test_transformer():
@@ -53,7 +54,7 @@ def test_failing_transformer():
 
     lens_x = KeyLens[dict, int](key="x")
 
-    def failure() -> int:
+    def failure(_: int) -> int:
         raise ValueError("Oh No!")
 
     fail = Transformer[int, int](failure, can_throw=True)
@@ -66,3 +67,16 @@ def test_failing_transformer():
 
     assert error
     assert error.msg == "Transformer has thrown an exception"
+
+
+def test_transformer_to_json():
+    expected = """
+    {
+        "type": "Transformer",
+        "from": "int",
+        "to": "int",
+        "can_throw": false
+    }
+    """
+
+    check_against_expected(inc, expected)

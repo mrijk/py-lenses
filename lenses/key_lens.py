@@ -77,6 +77,8 @@ NullableDictLens = NullableKeyLens[dict, T]
 
 
 class ListKeyLens(Lens[R, S]):
+    key_lens: KeyLens
+
     def __init__(self, key: str):
         self.key_lens = KeyLens(key=key)
 
