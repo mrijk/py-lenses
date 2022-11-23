@@ -1,72 +1,7 @@
-import json
-
-
 from lenses.key_lens import DictLens, NullableDictLens, ListKeyLens
 from lenses.lens import ListLens
-from lenses.predefined import inc, count
-from lenses.predicate import Predicate
+from lenses.predefined import count
 from test.unit_tests.utils import check_against_expected
-
-
-def test_key_lens_to_json():
-    lens = DictLens[int](key="x")
-
-    expected = """
-    {
-        "type": "KeyLens", 
-        "from": "dict", 
-        "to": "int", 
-        "key": "x"
-    }
-    """
-
-    check_against_expected(lens, expected)
-
-
-def test_nullable_key_lens_to_json():
-    lens = NullableDictLens[int](key="x")
-
-    expected = """
-    {
-        "type": "NullableKeyLens", 
-        "from": "dict", 
-        "to": "int | None", 
-        "key": "x"
-    }
-    """
-
-    check_against_expected(lens, expected)
-
-
-def test_composed_2_lens_to_json():
-    lens_x = DictLens[dict](key="x")
-    lens_y = DictLens[int](key="y")
-
-    lens = lens_x >> lens_y
-
-    expected = """
-    {
-        "type": "ComposedLens",
-        "from": "dict",
-        "to": "int",
-        "lenses": [
-            {
-                "type": "KeyLens",
-                "from": "dict",
-                "to": "dict",
-                "key": "x"
-            },
-            {
-                "type": "KeyLens",
-                "from": "dict",
-                "to": "int",
-                "key": "y"
-            }
-        ]
-    }
-    """
-
-    check_against_expected(lens, expected)
 
 
 def test_nullable_composed_lens_to_json():

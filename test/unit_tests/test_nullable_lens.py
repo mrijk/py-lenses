@@ -1,5 +1,5 @@
 from lenses.key_lens import DictLens, ListKeyLens, NullableDictLens
-from lenses.predefined import not_none
+from test.unit_tests.utils import check_against_expected
 
 
 def test_nullable_lens():
@@ -56,3 +56,18 @@ def test_combined_nullable_lens():
 
     assert not error
     assert result == [1, None]
+
+
+def test_nullable_key_lens_to_json():
+    lens = NullableDictLens[int](key="x")
+
+    expected = """
+    {
+        "type": "NullableKeyLens", 
+        "from": "dict", 
+        "to": "int | None", 
+        "key": "x"
+    }
+    """
+
+    check_against_expected(lens, expected)

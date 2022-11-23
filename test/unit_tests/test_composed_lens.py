@@ -1,5 +1,6 @@
 from lenses.key_lens import KeyLens, DictLens
 from lenses.lens import ComposedLens
+from test.unit_tests.utils import check_against_expected
 
 
 def test_two_lenses():
@@ -33,3 +34,34 @@ def test_three_lenses():
 
     assert not error
     assert result == 42
+
+
+def test_composed_2_lens_to_json():
+    lens_x = DictLens[dict](key="x")
+    lens_y = DictLens[int](key="y")
+
+    lens = lens_x >> lens_y
+
+    expected = """
+    {
+        "type": "ComposedLens",
+        "from": "dict",
+        "to": "int",
+        "lenses": [
+            {
+                "type": "KeyLens",
+                "from": "dict",
+                "to": "dict",
+                "key": "x"
+            },
+            {
+                "type": "KeyLens",
+                "from": "dict",
+                "to": "int",
+                "key": "y"
+            }
+        ]
+    }
+    """
+
+    check_against_expected(lens, expected)

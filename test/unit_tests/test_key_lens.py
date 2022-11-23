@@ -1,6 +1,7 @@
 from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, DictLens
 from lenses.lens import LensError
 from lenses.predicate import Predicate
+from test.unit_tests.utils import check_against_expected
 
 
 def test_single():
@@ -107,3 +108,17 @@ def test_list_key_lens():
     assert not error
     assert result == [1, 2, 3]
 
+
+def test_key_lens_to_json():
+    lens = DictLens[int](key="x")
+
+    expected = """
+    {
+        "type": "KeyLens", 
+        "from": "dict", 
+        "to": "int", 
+        "key": "x"
+    }
+    """
+
+    check_against_expected(lens, expected)

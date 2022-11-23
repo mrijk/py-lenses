@@ -1,6 +1,7 @@
-from typing import TypeVar
+from typing import TypeVar, Any
 
 from lenses.lens import LensError, Lens, ComposedTupleLens
+from lenses.transformer import Transformer
 
 R = TypeVar('R')
 S = TypeVar('S')
@@ -38,3 +39,9 @@ class DictItemLens(Lens):
         return {
             "type": self.__class__.__name__,
         }
+
+
+key = Transformer[tuple, str](lambda x: x[0])
+value = Transformer[tuple, Any](lambda x: x[1])
+
+to_dict = Transformer[list[tuple[str, Any]], dict](dict)

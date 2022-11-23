@@ -28,6 +28,8 @@ class Lens(Generic[R, S]):
     def __add__(self, other: "Lens[R, S2]") -> "Combined2Lens[R, tuple[S, S2]]":
         return Combined2Lens(lens1=self, lens2=other)
 
+    def __call__(self, data: R, **kwargs): ...
+
     def to_json(self) -> dict:
         pass
 
@@ -155,7 +157,7 @@ class ComposedLens(Lens[R, T]):
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, T | None]:
         match data:
             case list() as l:
-                return super().__call__(l)
+                return super().__call__(l, **kwargs)
             case _:
                 match self.lens1(data):
                     case None, (value, kwargs):
