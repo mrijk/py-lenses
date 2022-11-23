@@ -2,8 +2,8 @@ from typing import TypeVar
 
 from lenses.lens import Lens, LensError
 
-R = TypeVar('R')
-T = TypeVar('T')
+R = TypeVar("R")
+T = TypeVar("T")
 
 
 class InjectLens(Lens[R, T]):

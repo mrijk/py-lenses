@@ -4,10 +4,10 @@ from lenses.lens import ComposedLens, Lens, LensError
 from lenses.predicate import Predicate
 from lenses.transformer import BaseTransformer
 
-R = TypeVar('R')
-S = TypeVar('S')
-T = TypeVar('T')
-U = TypeVar('U')
+R = TypeVar("R")
+S = TypeVar("S")
+T = TypeVar("T")
+U = TypeVar("U")
 
 
 class KeyLens(BaseTransformer[R, S]):
@@ -21,14 +21,16 @@ class KeyLens(BaseTransformer[R, S]):
             "type": self.__class__.__name__,
             "from": type_0.__name__,
             "to": type_1.__name__,
-            "key": self.key
+            "key": self.key,
         }
 
     @overload
-    def __rshift__(self, other: "ListKeyLens[S, T]") -> "FooListKeyLens[R, T]": ...
+    def __rshift__(self, other: "ListKeyLens[S, T]") -> "FooListKeyLens[R, T]":
+        ...
 
     @overload
-    def __rshift__(self, other: "Lens[S, T]") -> "ComposedLens[R, T]": ...
+    def __rshift__(self, other: "Lens[S, T]") -> "ComposedLens[R, T]":
+        ...
 
     def __rshift__(self, other: Lens[S, T]) -> "Lens[R, T]":
         if isinstance(other, ListKeyLens):
@@ -46,7 +48,12 @@ class KeyLens(BaseTransformer[R, S]):
                 try:
                     return None, data[self.key]
                 except KeyError:
-                    return LensError(msg=f"Field {self.key} missing in {data}", key=self.key), None
+                    return (
+                        LensError(
+                            msg=f"Field {self.key} missing in {data}", key=self.key
+                        ),
+                        None,
+                    )
 
 
 class NullableKeyLens(KeyLens[R, S | None]):
@@ -68,7 +75,7 @@ class NullableKeyLens(KeyLens[R, S | None]):
             "type": self.__class__.__name__,
             "from": type_0.__name__,
             "to": f"{type_1.__name__} | None",
-            "key": self.key
+            "key": self.key,
         }
 
 
@@ -86,7 +93,10 @@ class ListKeyLens(Lens[R, S]):
         return ComposedFlattenListKeyLens[R, T](self.key_lens, other)
 
     @overload
-    def __rshift__(self, other: NullableKeyLens[S, T]) -> "ComposedListKeyLens[R, T | None]": ...
+    def __rshift__(
+        self, other: NullableKeyLens[S, T]
+    ) -> "ComposedListKeyLens[R, T | None]":
+        ...
 
     def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
         return ComposedListKeyLens[R, T](self.key_lens, other)
@@ -137,10 +147,14 @@ class ComposedListKeyLens(Lens[R, S]):
             return ComposedFlattenListKeyLens[R, U](self, lens=other)
         return ComposedListKeyLens[R, U](self, lens=other)
 
-    def __or__(self: Lens[R, T], other: Lens[list[T], U]) -> "ComposedFlattenListKeyLens[R, U]":
+    def __or__(
+        self: Lens[R, T], other: Lens[list[T], U]
+    ) -> "ComposedFlattenListKeyLens[R, U]":
         return ComposedFlattenListKeyLens[R, U](self, lens=other)
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S | None] | None]:
+    def __call__(
+        self, data: R, **kwargs
+    ) -> tuple[LensError | None, list[S | None] | None]:
         errors, source = self.source(data)
         if errors:
             return errors, None

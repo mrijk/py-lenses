@@ -3,10 +3,10 @@ from typing import Any, TypeVar
 from lenses.lens import ComposedTupleLens, Lens, LensError
 from lenses.transformer import Transformer
 
-R = TypeVar('R')
-S = TypeVar('S')
-T = TypeVar('T')
-U = TypeVar('U')
+R = TypeVar("R")
+S = TypeVar("S")
+T = TypeVar("T")
+U = TypeVar("U")
 
 
 class ComposedGenericTupleLens(Lens[R, tuple]):
@@ -14,7 +14,9 @@ class ComposedGenericTupleLens(Lens[R, tuple]):
         self.lens1 = lens1
         self.lens2 = lens2
 
-    def __call__(self: "ComposedTupleLens[R, tuple]", data: R, **kwargs) -> tuple[LensError | None, tuple | None]:
+    def __call__(
+        self: "ComposedTupleLens[R, tuple]", data: R, **kwargs
+    ) -> tuple[LensError | None, tuple | None]:
         errors, values = self.lens1(data)
         # TODO: add error handling
 
@@ -29,7 +31,9 @@ class ComposedGenericTupleLens(Lens[R, tuple]):
 
 
 class DictItemLens(Lens):
-    def __call__(self, data: dict, **kwargs) -> tuple[LensError | None, list[tuple] | None]:
+    def __call__(
+        self, data: dict, **kwargs
+    ) -> tuple[LensError | None, list[tuple] | None]:
         return None, list(data.items())
 
     def __rshift__(self, other):

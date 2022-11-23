@@ -2,8 +2,8 @@ from typing import Callable, TypeVar
 
 from lenses.lens import Lens, LensError
 
-R = TypeVar('R')
-S = TypeVar('S')
+R = TypeVar("R")
+S = TypeVar("S")
 
 
 class Transformer(Lens[R, S]):
@@ -17,7 +17,10 @@ class Transformer(Lens[R, S]):
                 result = self.f(data, **kwargs)
             except Exception as e:
                 name = self.__class__.__name__
-                return LensError(msg=f"{name} has thrown an exception", details=str(e)), None
+                return (
+                    LensError(msg=f"{name} has thrown an exception", details=str(e)),
+                    None,
+                )
             else:
                 return None, result
         else:

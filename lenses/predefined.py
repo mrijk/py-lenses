@@ -5,7 +5,7 @@ from lenses.transformer import Transformer
 
 # Some predefined lenses
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 add = Transformer[Iterable[int], int](sum, can_throw=True)
 
@@ -91,4 +91,3 @@ any_true = Transformer[Iterable[bool], bool](any)
 
 # TODO: int should be T
 not_none = Predicate[int | None](lambda x: x is not None)
-

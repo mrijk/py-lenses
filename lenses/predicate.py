@@ -2,7 +2,7 @@ from typing import TypeVar
 
 from lenses.transformer import Transformer
 
-R = TypeVar('R')
+R = TypeVar("R")
 
 
 class Predicate(Transformer[R, bool]):
