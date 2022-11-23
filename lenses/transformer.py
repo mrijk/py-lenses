@@ -1,6 +1,6 @@
-from typing import TypeVar, Callable
+from typing import Callable, TypeVar
 
-from lenses.lens import LensError, Lens
+from lenses.lens import Lens, LensError
 
 R = TypeVar('R')
 S = TypeVar('S')

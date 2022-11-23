@@ -1,6 +1,6 @@
-from typing import TypeVar, Any
+from typing import Any, TypeVar
 
-from lenses.lens import LensError, Lens, ComposedTupleLens
+from lenses.lens import ComposedTupleLens, Lens, LensError
 from lenses.transformer import Transformer
 
 R = TypeVar('R')

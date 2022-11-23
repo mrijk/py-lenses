@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generic, TypeVar, Any, Generator, Iterable
+from typing import Any, Generator, Generic, Iterable, TypeVar
 
 R = TypeVar('R')
 S = TypeVar('S')

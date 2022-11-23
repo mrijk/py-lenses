@@ -1,6 +1,6 @@
-from typing import TypeVar, overload, Iterable
+from typing import Iterable, TypeVar, overload
 
-from lenses.lens import LensError, Lens, ComposedLens
+from lenses.lens import ComposedLens, Lens, LensError
 from lenses.predicate import Predicate
 from lenses.transformer import BaseTransformer
 

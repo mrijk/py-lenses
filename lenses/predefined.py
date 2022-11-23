@@ -1,4 +1,4 @@
-from typing import TypeVar, Iterable
+from typing import Iterable, TypeVar
 
 from lenses.predicate import Predicate
 from lenses.transformer import Transformer
