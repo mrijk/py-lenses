@@ -12,3 +12,7 @@ class InjectLens(Lens[R, T]):
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, T | None]:
         return None, (data, self.kwargs)
+
+    def to_json(self) -> dict:
+        args = {**self.kwargs}
+        return {"type": self.__class__.__name__, "args": args}

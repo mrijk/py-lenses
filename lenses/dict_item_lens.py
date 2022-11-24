@@ -1,6 +1,8 @@
+"""This module implements the dictionary item lens."""
+
 from typing import Any, TypeVar
 
-from lenses.lens import ComposedTupleLens, Lens, LensError
+from lenses.lens import Lens, LensError
 from lenses.transformer import Transformer
 
 R = TypeVar("R")
@@ -10,15 +12,16 @@ U = TypeVar("U")
 
 
 class ComposedGenericTupleLens(Lens[R, tuple]):
+    """ComposedGenericTupleLens."""
+
     def __init__(self, lens1: Lens[R, tuple], lens2: Lens[T, tuple]):
+        """Initialize the class."""
         self.lens1 = lens1
         self.lens2 = lens2
 
-    def __call__(
-        self: "ComposedTupleLens[R, tuple]", data: R, **kwargs
-    ) -> tuple[LensError | None, tuple | None]:
+    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, tuple | None]:
+        """Call."""
         errors, values = self.lens1(data)
-        # TODO: add error handling
 
         result = (self.lens2(v) for v in values)
 
@@ -31,15 +34,20 @@ class ComposedGenericTupleLens(Lens[R, tuple]):
 
 
 class DictItemLens(Lens):
+    """DictItemLens."""
+
     def __call__(
         self, data: dict, **kwargs
     ) -> tuple[LensError | None, list[tuple] | None]:
+        """Call."""
         return None, list(data.items())
 
-    def __rshift__(self, other):
-        return ComposedGenericTupleLens[R](lens1=self, lens2=other)
+    def __rshift__(self, other) -> ComposedGenericTupleLens[R]:
+        """Overload bitwise shift right."""
+        return ComposedGenericTupleLens(lens1=self, lens2=other)
 
     def to_json(self) -> dict:
+        """Serialize to json."""
         return {
             "type": self.__class__.__name__,
         }

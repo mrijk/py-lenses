@@ -1,5 +1,6 @@
 import pytest as pytest
 
+from lenses.predefined import gt
 from lenses.predicate import Predicate
 from test.unit_tests.utils import check_against_expected
 
@@ -11,7 +12,7 @@ from test.unit_tests.utils import check_against_expected
         (14, True),
      ])
 def test_predicate(data, expected):
-    gt_13 = Predicate[int](lambda x: x > 13)
+    gt_13 = gt(13)
 
     error, result = gt_13(data)
 
@@ -33,6 +34,7 @@ def test_predicate_with_raise():
 
 
 def test_predicate_to_json():
+    # gt_13 = gt(13)
     gt_13 = Predicate[int](lambda x: x > 13)
 
     expected = """
