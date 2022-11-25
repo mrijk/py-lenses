@@ -1,11 +1,18 @@
-from typing import Iterable, TypeVar
+from abc import ABCMeta, abstractmethod
+from typing import Iterable, TypeVar, Any
 
 from lenses.predicate import Predicate
 from lenses.transformer import Transformer
 
 # Some predefined lenses
 
-T = TypeVar("T")
+
+class Comparable(metaclass=ABCMeta):
+    @abstractmethod
+    def __gt__(self, other: Any) -> bool: ...
+
+
+T = TypeVar("T", bound=Comparable)
 
 add = Transformer[Iterable[int], int](sum, can_throw=True)
 
@@ -81,7 +88,7 @@ isupper = Transformer[str, bool](str.isupper)
 
 
 def gt(value: T) -> Predicate[T]:
-    return Predicate[T](lambda x: x > value)
+    return Predicate(lambda x: x > value)
 
 
 all_true = Transformer[Iterable[bool], bool](all)

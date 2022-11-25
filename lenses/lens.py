@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Generator, Generic, Iterable, TypeVar
 
@@ -28,6 +29,7 @@ class Lens(Generic[R, S]):
     def __add__(self, other: "Lens[R, S2]") -> "CombinedLens[R, tuple[S, S2]]":
         return Combined2Lens(lens1=self, lens2=other)
 
+    @abstractmethod
     def __call__(self, data: R, **kwargs):
         ...
 
