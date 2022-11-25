@@ -127,13 +127,7 @@ class FooListKeyLens(Lens[R, S]):
         if errors:
             return errors, None
 
-        errors, source = self.lens.key_lens(source)
-        if errors:
-            return errors, None
-
-        result = [v for v in source]
-
-        return None, result
+        return self.lens.key_lens(source)
 
 
 class ComposedListKeyLens(Lens[R, S]):

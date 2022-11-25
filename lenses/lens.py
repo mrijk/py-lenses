@@ -109,7 +109,7 @@ class ComposedFlattenTupleLens(Lens[R, T]):
 
 
 class Combined2Lens(CombinedLens[R, S]):
-    """lens = KeyLens(key="x") + KeyLens(key="y")"""
+    """lens = KeyLens(key="x") + KeyLens(key="y")."""
 
     def __init__(self, lens1: Lens[R, S1], lens2: Lens[R, S2]):
         self.lens1 = lens1
@@ -163,7 +163,7 @@ class Combined2Lens(CombinedLens[R, S]):
 
 
 class ComposedLens(Lens[R, T]):
-    """lens = KeyLens(key="x") >> KeyLens(key="y")"""
+    """lens = KeyLens(key="x") >> KeyLens(key="y")."""
 
     def __init__(self, lens1: Lens[R, S], lens2: Lens[S, T]):
         self.lens1 = lens1
