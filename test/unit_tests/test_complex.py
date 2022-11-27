@@ -1,5 +1,4 @@
 # Selection of more complex use cases
-from typing import Any
 
 from lenses.dict_item_lens import DictItemLens
 from lenses.lens import ListLens
@@ -27,7 +26,7 @@ def test_complex_2():
     data = {"x": 1, "y": 2, "z": 3}
 
     lens_dict = DictItemLens()
-    second = Transformer[tuple, Any](lambda x: x[1])
+    second = Transformer[tuple, int](lambda x: x[1])
 
     lens = lens_dict >> second | add
 

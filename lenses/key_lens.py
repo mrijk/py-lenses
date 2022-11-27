@@ -32,7 +32,7 @@ class KeyLens(BaseTransformer[R, S]):
     def __rshift__(self, other: "Lens[S, T]") -> "ComposedLens[R, T]":
         ...
 
-    def __rshift__(self, other: Lens[S, T]) -> "Lens[R, T]":
+    def __rshift__(self, other: Lens[S, T]) -> "ComposedLens[R, T]":
         if isinstance(other, ListKeyLens):
             return FooListKeyLens[R, T](self, other)
         else:

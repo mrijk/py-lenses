@@ -20,13 +20,13 @@ class LensError:
 
 
 class Lens(Generic[R, S]):
-    def __or__(self, other: "Lens[S, T]") -> "Lens[R, T]":
+    def __or__(self, other: "Lens[S, T]") -> "ComposedLens[R, T]":
         return ComposedLens(self, other)
 
-    def __rshift__(self, other: "Lens[S, T]") -> "Lens[R, T]":
+    def __rshift__(self, other: "Lens[S, T]") -> "ComposedLens[R, T]":
         return ComposedLens(self, other)
 
-    def __add__(self, other: "Lens[R, S2]") -> "CombinedLens[R, tuple[S, S2]]":
+    def __add__(self, other: "Lens[R, S2]") -> "Combined2Lens[R, tuple[S, S2]]":
         return Combined2Lens(lens1=self, lens2=other)
 
     @abstractmethod
