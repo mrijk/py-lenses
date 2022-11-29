@@ -1,4 +1,4 @@
-from typing import Iterable, TypeVar
+from typing import Iterable, TypeVar, Callable
 
 from lenses.transformer import Transformer
 
@@ -48,6 +48,11 @@ def nth(n: int, default: T | None = None) -> Transformer[Iterable[T], T | None]:
 def nth_or_last(n: int, default: T | None = None) -> Transformer[Iterable[T], T | None]:
     from more_itertools import nth_or_last
     return Transformer(lambda iterable: nth_or_last(iterable, n=n, default=default))
+
+
+def strip(pred: Callable) -> Transformer[Iterable[T], Iterable[T]]:
+    from more_itertools import strip
+    return Transformer(lambda iterable: strip(iterable, pred))
 
 
 def take(n: int) -> Transformer[Iterable[R], list[S]]:

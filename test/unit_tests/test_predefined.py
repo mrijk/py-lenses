@@ -1,8 +1,11 @@
+from typing import Any
+
 import pytest as pytest
 
 from lenses.key_lens import ListKeyLens
+from lenses.lens import ListLens
 from lenses.predefined import all_true, any_true, count, add, capitalize, reverse, lower, upper, swapcase, islower, \
-    istitle, isupper, title, endswith, startswith, replace, removeprefix, removesuffix
+    istitle, isupper, title, endswith, startswith, replace, removeprefix, removesuffix, to_list
 
 
 def test_count():
@@ -142,4 +145,19 @@ def test_string_predicates(transformer, expected):
 
     assert not error
     assert result == expected
+
+
+def test_to_list():
+    data = ("aap", "noot", "mies")
+
+    all = ListLens[Any]()
+
+    lens = all | to_list
+
+    error, result = lens(data)
+
+    assert not error
+    assert result == ["aap", "noot", "mies"]
+
+
 
