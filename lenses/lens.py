@@ -237,7 +237,6 @@ class FlattenListLens(Lens[R, S]):
 
 
 class ListLens(Generic[R], Lens[R, R]):
-# class ListLens(Generic[R]):
     def __rshift__(self, other: Lens[Iterable[R], S]) -> ComposedListLens[R, S]:
         return ComposedListLens[R, S](lens=other)
 
