@@ -1,5 +1,6 @@
 from typing import Iterable, TypeVar, Callable, Any, Optional
 
+from lenses.generator import Generator
 from lenses.predicate import Predicate
 from lenses.transformer import Transformer
 
@@ -106,3 +107,13 @@ def take(n: int) -> Transformer[Iterable[R], list[S]]:
 def tail(n: int) -> Transformer[Iterable[Any], Iterable[Any]]:
     from more_itertools import tail
     return Transformer(lambda iterable: tail(n, iterable))
+
+
+def polynomial_from_roots(roots: list[int]) -> Generator[int]:
+    from more_itertools import polynomial_from_roots
+    return Generator(f=lambda: polynomial_from_roots(roots), can_throw=False)
+
+
+def sieve(n: int) -> Generator[int]:
+    from more_itertools import sieve
+    return Generator(f=lambda: sieve(n), can_throw=False)
