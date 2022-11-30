@@ -1,5 +1,6 @@
 from typing import Iterable, TypeVar, Callable, Any, Optional
 
+from lenses.predicate import Predicate
 from lenses.transformer import Transformer
 
 R = TypeVar("R")
@@ -9,6 +10,29 @@ U = TypeVar("U")
 
 
 UNSET = object()
+
+
+def _all_equal() -> Transformer[Iterable[T], bool]:
+    from more_itertools import all_equal
+    return Transformer(all_equal, can_throw=False)
+
+
+all_equal = _all_equal()
+
+
+def first_true(default: U | None = None, pred: Predicate[Any] | None = None) -> Transformer[Iterable[T], T | U]:
+    from more_itertools import first_true
+    can_throw = pred.can_throw
+    return Transformer(lambda iterable: first_true(iterable, default=default, pred=pred.f), can_throw=can_throw)
+
+
+def quantify(pred: Predicate[Any] | None = None) -> Transformer[Iterable[T], int]:
+    from more_itertools import quantify
+    if not pred:
+        return Transformer(lambda iterable: quantify(iterable))
+    else:
+        can_throw = pred.can_throw
+        return Transformer(lambda iterable: quantify(iterable, pred=pred.f), can_throw=can_throw)
 
 
 def first(default: T | None = UNSET) -> Transformer[Iterable[T], T]:
