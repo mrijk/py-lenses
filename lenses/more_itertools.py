@@ -109,6 +109,16 @@ def tail(n: int) -> Transformer[Iterable[Any], Iterable[Any]]:
     return Transformer(lambda iterable: tail(n, iterable))
 
 
+def tabulate(func: Callable[[...], T], start: int | None = None) -> Generator[T]:
+    from more_itertools import tabulate
+    return Generator(f=lambda: tabulate(func, start))
+
+
+def repeatfunc(func: Callable[[...], T], times: int | None = None, *args: Any) -> Generator[T]:
+    from more_itertools import repeatfunc
+    return Generator(f=lambda: repeatfunc(func, times, *args))
+
+
 def polynomial_from_roots(roots: list[int]) -> Generator[int]:
     from more_itertools import polynomial_from_roots
     return Generator(f=lambda: polynomial_from_roots(roots), can_throw=False)
