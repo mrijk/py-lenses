@@ -99,7 +99,7 @@ def rstrip(pred: Callable[[Any], bool]) -> Transformer[Iterable[Any], Iterable[A
     return Transformer(lambda iterable: rstrip(iterable, pred))
 
 
-def take(n: int) -> Transformer[Iterable[R], list[S]]:
+def take(n: int) -> Transformer[Iterable[T], list[T]]:
     from more_itertools import take
     return Transformer(lambda iterable: take(n, iterable))
 
