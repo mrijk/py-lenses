@@ -16,8 +16,13 @@ class Generator(Generic[T]):
         can_throw = self.can_throw or other.can_throw
         return Generator(f=lambda: (other(value)[1] for value in self.f()), can_throw=can_throw)
 
-    def __or__(self, other:  Transformer[Iterable[T], U]) -> "Generator[U]":
+    def __or__(self, other:  Transformer[Iterable[T], Iterable[U]]) -> "Generator[U]":
         return Generator(f=lambda: other(self.f())[1])
+
+    def __add__(self, other: "Generator[U]") -> "Generator[tuple[T, U]]":
+        # Todo: we need to use the same trick as combined lenses to have tuples of 2, 3, 4, etc. elements
+        # Todo: error handling
+        return Generator(f=lambda: zip(self.f(), other.f()))
 
     def __call__(self, **kwargs) -> tuple[LensError | None, Iterable[T] | None]:
         # TODO: add error handling

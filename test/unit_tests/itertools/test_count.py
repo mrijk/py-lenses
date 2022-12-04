@@ -3,7 +3,7 @@ from lenses.more_itertools import take
 
 
 def test_count():
-    infinite = count()
+    infinite = count[int]()
     take_4 = take(4)
 
     generator = infinite | take_4

@@ -1,5 +1,4 @@
 from lenses.generator import Generator
-from lenses.more_itertools import sieve
 from lenses.predefined import inc, add
 from test.unit_tests.utils import check_against_expected
 
@@ -23,6 +22,17 @@ def test_compose():
 
 
 def test_combine():
+    source1 = Generator[int](f=lambda: range(5), can_throw=False)
+    source2 = Generator[int](f=lambda: range(2, 7), can_throw=False)
+
+    generator = source1 + source2
+
+    error, result = generator()
+    assert not error
+    assert list(result) == [(0, 2), (1, 3), (2, 4), (3, 5), (4, 6)]
+
+
+def test_accumulate():
     source = Generator[int](f=lambda: range(5), can_throw=False)
 
     generator = source | add

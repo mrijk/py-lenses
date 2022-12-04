@@ -3,7 +3,7 @@ from lenses.more_itertools import take
 
 
 def test_cycle():
-    infinite = cycle("ABC")
+    infinite = cycle[str]("ABC")
     take_6 = take(6)
 
     generator = infinite | take_6
