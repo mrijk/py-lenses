@@ -9,11 +9,7 @@ def test_2_added_lenses():
     lens_x = DictLens[int](key="x")
     lens_y = DictLens[str](key="y")
 
-    lens = lens_x + lens_y
-
-    assert isinstance(lens, Combined2Lens)
-
-    error, result = lens(data)
+    error, result = data >> (lens_x + lens_y)
 
     assert not error
     assert result == (42, "42")
@@ -26,11 +22,7 @@ def test_3_added_lenses():
     lens_y = DictLens[str](key="y")
     lens_z = DictLens[float](key="z")
 
-    lens = lens_x + lens_y + lens_z
-
-    assert isinstance(lens, Combined3Lens)
-
-    error, result = lens(data)
+    error, result = data >> (lens_x + lens_y + lens_z)
 
     assert not error
     assert result == (42, "42", 3.14)
@@ -44,11 +36,7 @@ def test_4_added_lenses():
     lens_y = DictLens[str](key="y")
     lens_z = DictLens[float](key="z")
 
-    lens = lens_w + lens_x + lens_y + lens_z
-
-    assert isinstance(lens, Combined4Lens)
-
-    error, result = lens(data)
+    error, result = data >> (lens_w + lens_x + lens_y + lens_z)
 
     assert not error
     assert result == ("13", 42, "42", 3.14)
@@ -60,11 +48,7 @@ def test_added_lenses_with_missing_keys():
     lens_x = DictLens[int](key="a")
     lens_y = DictLens[str](key="b")
 
-    lens = lens_x + lens_y
-
-    assert isinstance(lens, Combined2Lens)
-
-    error, result = lens(data)
+    error, result = data >> (lens_x + lens_y)
 
     assert error
     error1, error2 = error.details
@@ -83,11 +67,7 @@ def test_2_added_lenses_with_composition():
 
     lens_q = lens_z >> DictLens[int](key="q")
 
-    lens_yq = lens_y + lens_q
-
-    lens = lens_x >> lens_yq
-
-    error, result = lens(data)
+    error, result = data >> lens_x >> (lens_y + lens_q)
 
     assert not error
     assert result == (42, 666)
@@ -102,13 +82,7 @@ def test_3_added_lenses_with_composition():
     lens_q = DictLens[int](key="q")
     lens_w = DictLens[int](key="w")
 
-    lens_yqw = lens_y + (lens_z >> lens_q) + lens_w
-
-    assert isinstance(lens_yqw, Combined3Lens)
-
-    lens = lens_x >> lens_yqw
-
-    error, result = lens(data)
+    error, result = data >> lens_x >> (lens_y + (lens_z >> lens_q) + lens_w)
 
     assert not error
     assert result == (42, 666, 13)
@@ -127,6 +101,8 @@ def test_combine_and_compose():
 
     error, result = lens(data)
 
+    # error, result = data >> (lens_x + lens_y) >> lens_z
+
     assert not error
     assert isinstance(result, tuple), f"Expected tuple, found {type(result)}"
     assert result == (13, 14)
@@ -143,6 +119,8 @@ def test_combine_2_and_compose_with_2():
     lens = (lens_x + lens_y) >> (lens_w + lens_z)
 
     error, result = lens(data)
+
+    # error, result = data >> (lens_x + lens_y) >> (lens_w + lens_z)
 
     assert not error
     assert result == ((13, 666), (14, "foo"))

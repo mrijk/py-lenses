@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Generator, Generic, Iterable, TypeVar
+from typing import Any, Generator, Generic, Iterable, TypeVar, overload
 
 R = TypeVar("R")
 S = TypeVar("S")
@@ -25,6 +25,20 @@ class Lens(Generic[R, S]):
 
     def __rshift__(self, other: "Lens[S, T]") -> "ComposedLens[R, T]":
         return ComposedLens(self, other)
+
+    # @overload
+    # def __rrshift__(self, other: tuple[LensError | None, R | None]) -> tuple[LensError | None, S | None]: ...
+    #
+    # @overload
+    # def __rrshift__(self, other: R) -> tuple[LensError | None, S | None]: ...
+    #
+    # def __rrshift__(self, other):
+    #     match other:
+    #         case tuple():
+    #             # TODO: error handling
+    #             return self(other[1])
+    #         case _:
+    #             return self(other)
 
     def __add__(self, other: "Lens[R, S2]") -> "Combined2Lens[R, tuple[S, S2]]":
         return Combined2Lens(lens1=self, lens2=other)
@@ -79,6 +93,20 @@ class Combined4Lens(CombinedLens[R, S]):
     ):
         super().__init__([lens1, lens2, lens3, lens4])
 
+    # @overload
+    # def __rrshift__(self, other: tuple[LensError | None, R | None]) -> tuple[LensError | None, S | None]: ...
+    #
+    # @overload
+    # def __rrshift__(self, other: R) -> tuple[LensError | None, S | None]: ...
+
+    def __rrshift__(self: "Combined4Lens[R, tuple[S1, S2, S3, S4]]", other):
+        match other:
+            case tuple():
+                # TODO: error handling
+                return self(other[1])
+            case _:
+                return self(other)
+
     def __call__(
         self: Lens[R, tuple[S1, S2, S3, S4]], data: R, **kwargs
     ) -> tuple[LensError | None, tuple[S1, S2, S3, S4] | None]:
@@ -93,6 +121,20 @@ class Combined3Lens(CombinedLens[R, S]):
         self: Lens[R, tuple[S1, S2, S3]], other: Lens[R, S4]
     ) -> "Combined4Lens[R, tuple[S1, S2, S3, S4]]":
         return Combined4Lens(*self.lenses, lens4=other)
+
+    @overload
+    def __rrshift__(self, other: tuple[LensError | None, R | None]) -> tuple[LensError | None, S | None]: ...
+
+    @overload
+    def __rrshift__(self, other: R) -> tuple[LensError | None, S | None]: ...
+
+    def __rrshift__(self: "Combined3Lens[R, tuple[S1, S2, S3]]", other: R | tuple[LensError | None, R | None]):
+        match other:
+            case tuple():
+                # TODO: error handling
+                return self(other[1])
+            case _:
+                return self(other)
 
     def __call__(
         self: Lens[R, tuple[S1, S2, S3]], data: R, **kwargs
@@ -125,6 +167,20 @@ class Combined2Lens(CombinedLens[R, S]):
         self: Lens[R, tuple[S1, S2]], other: "Lens[S1 | S2, T]"
     ) -> "ComposedTupleLens[R, tuple[T, T]]":
         return ComposedTupleLens(lens1=self, lens2=other)
+
+    @overload
+    def __rrshift__(self, other: tuple[LensError | None, R | None]) -> tuple[LensError | None, S | None]: ...
+
+    @overload
+    def __rrshift__(self, other: R) -> tuple[LensError | None, S | None]: ...
+
+    def __rrshift__(self: "Combined2Lens[R, tuple[S1, S2]]", other):
+        match other:
+            case tuple():
+                # TODO: error handling
+                return self(other[1])
+            case _:
+                return self(other)
 
     def __add__(
         self: Lens[R, tuple[S1, S2]], other: Lens[R, S3]

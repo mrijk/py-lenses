@@ -19,9 +19,7 @@ def test_nested_2_nullable_lens():
     lens_x = NullableDictLens[dict](key="x")
     lens_y = DictLens[int](key="y")
 
-    lens = lens_x >> lens_y
-
-    error, result = lens(data)
+    error, result = data >> lens_x >> lens_y
 
     assert not error
     assert result is None
@@ -34,9 +32,7 @@ def test_nested_3_nullable_lens():
     lens_y = DictLens[dict](key="y")
     lens_z = DictLens[str](key="z")
 
-    lens = lens_x >> lens_y >> lens_z
-
-    error, result = lens(data)
+    error, result = data >> lens_x >> lens_y >> lens_z
 
     assert not error
     assert result is None

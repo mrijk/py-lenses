@@ -9,7 +9,7 @@ def test_single():
 
     lens = DictLens[int](key="x")
 
-    error, result = lens(data)
+    error, result = data >> lens
 
     assert not error
     assert result == 42

@@ -34,3 +34,8 @@ def test_complex_2():
 
     assert not error
     assert result == 6
+
+
+def test_complex_3():
+    """ Log all data for which this is not a root key """
+    pass

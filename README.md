@@ -14,9 +14,7 @@ Example of a composed lens using the overloaded `>>` operator
     lens_x = DictLens[dict](key="x")
     lens_y = DictLens[int](key="y")
 
-    lens = lens_x >> lens_y
-
-    error, result = lens(data)
+    error, result = data >> lens_x >> lens_y
 
     assert result == 42
 ```

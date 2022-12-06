@@ -1,4 +1,4 @@
-from typing import Callable, TypeVar
+from typing import Callable, TypeVar, overload
 
 from lenses.lens import Lens, LensError
 
@@ -40,6 +40,20 @@ class Transformer(Lens[R, S]):
 class BaseTransformer(Lens[R, S]):
     def __init__(self, f):
         self.f = f
+
+    @overload
+    def __rrshift__(self, other: tuple[LensError | None, R | None]) -> tuple[LensError | None, S | None]: ...
+
+    @overload
+    def __rrshift__(self, other: R) -> tuple[LensError | None, S | None]: ...
+
+    def __rrshift__(self, other):
+        match other:
+            case tuple():
+                # TODO: error handling
+                return self(other[1])
+            case _:
+                return self(other)
 
     def __call__(self, data: R, **kwargs) -> tuple[LensError | None, S | None]:
         match data:
