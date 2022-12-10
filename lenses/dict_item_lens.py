@@ -2,7 +2,8 @@
 
 from typing import Any, TypeVar
 
-from lenses.lens import Lens, LensError
+from lenses.lens import Lens
+from lenses.lens_result import LensResult, LensError, LensValue
 from lenses.transformer import Transformer
 
 R = TypeVar("R")
@@ -19,7 +20,7 @@ class ComposedGenericTupleLens(Lens[R, tuple]):
         self.lens1 = lens1
         self.lens2 = lens2
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, tuple | None]:
+    def __call__(self, data: R, **kwargs) -> LensResult[tuple]:
         """Call."""
         errors, values = self.lens1(data)
 
@@ -28,19 +29,17 @@ class ComposedGenericTupleLens(Lens[R, tuple]):
         errors, values = list(zip(*result))
 
         if any(errors):
-            return LensError(msg="Error in list"), None
+            return LensError(msg="Error in list")
         else:
-            return None, tuple(values)
+            return LensValue(tuple(values))
 
 
 class DictItemLens(Lens):
     """DictItemLens."""
 
-    def __call__(
-        self, data: dict, **kwargs
-    ) -> tuple[LensError | None, list[tuple] | None]:
+    def __call__(self, data: dict, **kwargs) -> LensResult[list[tuple]]:
         """Call."""
-        return None, list(data.items())
+        return LensValue(list(data.items()))
 
     def __rshift__(self, other) -> ComposedGenericTupleLens[R]:
         """Overload bitwise shift right."""

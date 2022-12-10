@@ -34,10 +34,9 @@ def test_values():
 
     lens = lens_dict >> value
 
-    error, result = lens(data)
+    result = lens(data)
 
-    assert not error
-    assert result == (1, 2, 3)
+    assert result.value() == (1, 2, 3)
 
 
 def test_serde():

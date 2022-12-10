@@ -10,11 +10,8 @@ def test_transformer():
 
     lens_x = KeyLens[dict, int](key="x")
 
-    lens = lens_x >> inc
+    error, result = data >> lens_x >> inc
 
-    assert isinstance(lens, ComposedLens)
-
-    error, result = lens(data)
     assert not error
     assert result == 2
 
@@ -24,11 +21,8 @@ def test_two_composed_transformers():
 
     lens_x = KeyLens[dict, int](key="x")
 
-    lens = lens_x >> inc >> dec
+    error, result = data >> lens_x >> inc >> dec
 
-    assert isinstance(lens, ComposedLens)
-
-    error, result = lens(data)
     assert not error
 
     assert result == 1
@@ -39,11 +33,7 @@ def test_two_combined_transformers():
 
     lens_x = KeyLens[dict, int](key="x")
 
-    lens = lens_x >> (inc + dec)
-
-    assert isinstance(lens, ComposedLens)
-
-    error, result = lens(data)
+    error, result = data >> lens_x >> (inc + dec)
     assert not error
 
     assert result == (2, 0)

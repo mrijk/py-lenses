@@ -1,6 +1,7 @@
 from typing import Iterable, TypeVar, overload
 
-from lenses.lens import ComposedLens, Lens, LensError
+from lenses.lens import ComposedLens, Lens
+from lenses.lens_result import LensResult, LensValue, LensError
 from lenses.predicate import Predicate
 from lenses.transformer import BaseTransformer
 
@@ -38,36 +39,31 @@ class KeyLens(BaseTransformer[R, S]):
         else:
             return ComposedLens[R, T](self, other)
 
-    def get_by_key(self, data: R) -> tuple[LensError | None, S | None]:
+    def get_by_key(self, data: R) -> LensResult[S]:
         match data:
             case None:
-                return None, None
+                return LensValue(None)
             case dict() if data is None:
-                return None, None
+                return LensValue(None)
             case _:
                 try:
-                    return None, data[self.key]
+                    return LensValue(value=data[self.key])
                 except KeyError:
-                    return (
-                        LensError(
-                            msg=f"Field {self.key} missing in {data}", key=self.key
-                        ),
-                        None,
-                    )
+                    return LensError(msg=f"Field {self.key} missing in {data}", key=self.key)
 
 
 class NullableKeyLens(KeyLens[R, S | None]):
-    def get_by_key(self, data: R) -> tuple[LensError | None, S | None]:
+    def get_by_key(self, data: R) -> LensResult[S]:
         match data:
             case None:
-                return None, None
+                return LensValue(None)
             case dict() if data is None:
-                return None, None
+                return LensValue(None)
             case _:
                 try:
-                    return None, data[self.key]
+                    return LensValue(data[self.key])
                 except KeyError:
-                    return None, None
+                    return LensValue(None)
 
     def to_json(self) -> dict:
         type_0, type_1 = self.__orig_class__.__args__
@@ -101,7 +97,7 @@ class ListKeyLens(Lens[R, S]):
     def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
         return ComposedListKeyLens[R, T](self.key_lens, other)
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
+    def __call__(self, data: R, **kwargs) -> LensResult[S]:
         return self.key_lens(data)
 
     def to_json(self) -> dict:
@@ -122,7 +118,7 @@ class FooListKeyLens(Lens[R, S]):
     def __rshift__(self, other: Lens[S, T]) -> "ComposedListKeyLens[R, T]":
         return ComposedListKeyLens[R, T](self, other)
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, list[S] | None]:
+    def __call__(self, data: R, **kwargs) -> LensResult[list[S]]:
         errors, source = self.source(data)
         if errors:
             return errors, None
@@ -146,12 +142,10 @@ class ComposedListKeyLens(Lens[R, S]):
     ) -> "ComposedFlattenListKeyLens[R, U]":
         return ComposedFlattenListKeyLens[R, U](self, lens=other)
 
-    def __call__(
-        self, data: R, **kwargs
-    ) -> tuple[LensError | None, list[S | None] | None]:
-        errors, source = self.source(data)
-        if errors:
-            return errors, None
+    def __call__(self, data: R, **kwargs) -> LensResult[list[S]]:
+        source = self.source(data)
+        if isinstance(source, LensError):
+            return source
 
         if isinstance(self.lens, Predicate):
             # TODO: better to return a different kind of lens in the __rshift__ when this is a predicate
@@ -163,9 +157,9 @@ class ComposedListKeyLens(Lens[R, S]):
         errors, values = list(zip(*result))
 
         if any(errors):
-            return LensError(msg="Error in list", details=errors), None
+            return LensError(msg="Error in list", details=errors)
         else:
-            return None, list(values)
+            return LensValue(list(values))
 
     def to_json(self) -> dict:
         lens_json = self.lens.to_json()

@@ -1,5 +1,6 @@
 from lenses.key_lens import KeyLens, ListKeyLens, ComposedListKeyLens, DictLens
 from lenses.lens import LensError
+from lenses.lens_result import LensValue
 from lenses.predicate import Predicate
 from test.unit_tests.utils import check_against_expected
 
@@ -9,10 +10,9 @@ def test_single():
 
     lens = DictLens[int](key="x")
 
-    error, result = data >> lens
+    result = data >> lens
 
-    assert not error
-    assert result == 42
+    assert result.value() == 42
 
 
 def test_missing_key():
@@ -20,12 +20,11 @@ def test_missing_key():
 
     lens_q = DictLens[int](key="q")
 
-    error, result = lens_q(data)
+    result = data >> lens_q
 
-    assert error
-    assert isinstance(error, LensError)
-    assert error.key == "q"
-    assert result is None
+    match result:
+        case LensError() as error:
+            assert error.key == 'q'
 
 
 def test_missing_list_key():
@@ -33,12 +32,11 @@ def test_missing_list_key():
 
     lens_q = DictLens[int](key="q")
 
-    error, result = lens_q(data)
+    result = data >> lens_q
 
-    assert error
-    assert isinstance(error, LensError)
-    assert error.key == "q"
-    assert result is None
+    match result:
+        case LensError() as error:
+            assert error.key == 'q'
 
 
 def test_missing_composed_list_key():
@@ -51,9 +49,9 @@ def test_missing_composed_list_key():
 
     assert isinstance(lens, ComposedListKeyLens)
 
-    error, result = lens(data)
+    result = lens(data)
 
-    assert error
+    assert isinstance(result, LensError)
 
 
 def test_missing_composed_list_key_value():

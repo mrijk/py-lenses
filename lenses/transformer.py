@@ -1,6 +1,7 @@
-from typing import Callable, TypeVar, overload
+from typing import Callable, TypeVar, overload, Iterator
 
-from lenses.lens import Lens, LensError
+from lenses.lens import Lens
+from lenses.lens_result import LensResult, LensError, LensValue
 
 R = TypeVar("R")
 S = TypeVar("S")
@@ -11,20 +12,34 @@ class Transformer(Lens[R, S]):
         self.f = f
         self.can_throw = can_throw
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, S | None]:
+    @overload
+    def __rrshift__(self, other: LensResult[R]) -> LensResult[S]: ...
+
+    @overload
+    def __rrshift__(self, other: list[R]) -> LensResult[S]: ...
+
+    def __rrshift__(self: "Transformer[R, S]", other: R | list[R] | LensResult[R]):
+        match other:
+            case LensValue(x):
+                # TODO: error handling
+                if isinstance(x, Iterator):
+                    return None, (self(item) for item in x)
+                else:
+                    return self(other[1])
+            case _:
+                return self(other)
+
+    def __call__(self, data: R, **kwargs) -> LensResult[S]:
         if self.can_throw:
             try:
                 result = self.f(data, **kwargs)
             except Exception as e:
                 name = self.__class__.__name__
-                return (
-                    LensError(msg=f"{name} has thrown an exception", details=str(e)),
-                    None,
-                )
+                return LensError(msg=f"{name} has thrown an exception", details=str(e))
             else:
-                return None, result
+                return LensValue(result)
         else:
-            return None, self.f(data, **kwargs)
+            return LensValue(self.f(data, **kwargs))
 
     def to_json(self) -> dict:
         type_0, type_1 = self.__orig_class__.__args__
@@ -42,20 +57,19 @@ class BaseTransformer(Lens[R, S]):
         self.f = f
 
     @overload
-    def __rrshift__(self, other: tuple[LensError | None, R | None]) -> tuple[LensError | None, S | None]: ...
+    def __rrshift__(self, other: LensResult[R]) -> LensResult[S]: ...
 
     @overload
-    def __rrshift__(self, other: R) -> tuple[LensError | None, S | None]: ...
+    def __rrshift__(self, other: R) -> LensResult[S]: ...
 
-    def __rrshift__(self, other):
+    def __rrshift__(self: "BaseTransformer[R, S]", other) -> LensResult[S]:
         match other:
-            case tuple():
-                # TODO: error handling
-                return self(other[1])
+            case LensValue(x):
+                return self(x)
             case _:
                 return self(other)
 
-    def __call__(self, data: R, **kwargs) -> tuple[LensError | None, S | None]:
+    def __call__(self: "BaseTransformer[R, S]", data: R, **kwargs) -> LensResult[S]:
         match data:
             case list() as l:
                 return super().__call__(l)

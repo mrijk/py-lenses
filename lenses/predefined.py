@@ -61,6 +61,9 @@ def find(sub: str) -> Transformer[str, int]:
     return Transformer[str, int](lambda s: s.find(sub))
 
 
+def split(seperator: str | None = None, maxsplit: int | None = None):
+    return Transformer[str, str](lambda s: s.strip())
+
 # String predicates
 
 
